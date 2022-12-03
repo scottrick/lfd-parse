@@ -3,7 +3,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Read};
 use std::str::from_utf8;
 
 #[derive(Debug)]
@@ -53,33 +53,34 @@ impl LfdHeaderType {
     }
 }
 
-pub struct LfdHeader<'a> {
+pub struct LfdHeader {
     pub header_type: LfdHeaderType,
-    // pub lfd_header_type: u32,
-    pub header_name: &'a str,
-    // pub lfd_header_name: [u8; 8],
+    pub header_name: String,
     pub size: i32,
-    // pub lfd_size: i32,
 }
 
 impl LfdHeader {
-    pub fn read_from_buffer(reader: BufReader<File>) -> Result<Self, String> {
-        Ok(LfdHeader {
-            header_type: LfdHeaderType::from_u32(reader.read_u32::<BigEndian>()),
-            header_name: "asdf",
-            size: 1,
-        })
+    pub fn read_from_buffer(reader: &mut BufReader<File>) -> Result<Self, String> {
+        let lfd_type = reader
+            .read_u32::<BigEndian>()
+            .map_err(|e| format!("Error reading lfd_header_type: {e}"))?;
 
-        /*
-                let mut header = LfdHeader {
-            lfd_header_type:
-            ..Default::default()
-        };
-        // let mut header = LfdHeader::default();
-        // file.read_exact(&mut header.lfd_header_type)?;
-        file.read_exact(&mut header.lfd_header_name)?;
-        header.lfd_size = file.read_i32::<LittleEndian>()?;
-        */
+        let mut name: [u8; 8] = [0; 8];
+        reader
+            .read_exact(&mut name)
+            .map_err(|e| format!("Error reading name: {e}"))?;
+
+        let name = from_utf8(&name).map_err(|e| format!("Error reading lfd name: {e}"))?;
+
+        let lfd_size = reader
+            .read_i32::<LittleEndian>()
+            .map_err(|e| format!("Error reading header_size: {e}"))?;
+
+        Ok(LfdHeader {
+            header_type: LfdHeaderType::from_u32(lfd_type),
+            header_name: name.to_string(),
+            size: lfd_size,
+        })
     }
 }
 
@@ -87,16 +88,8 @@ impl Debug for LfdHeader {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "TYPE: {:08x?}  NAME: {}, SIZE: {}",
-            // self.lfd_header_type,
-            // "TYPE: [{:02x?} {:02x?} {:02x?} {:02x?}]  NAME: [{}], SIZE: [{}]",
-            // self.lfd_header_type[0],
-            // self.lfd_header_type[1],
-            // self.lfd_header_type[2],
-            // self.lfd_header_type[3],
-            self.lfd_header_type,
-            from_utf8(&self.lfd_header_name).unwrap(),
-            self.lfd_size
+            "LfdHeader[{:?}] Name[{}] Size[{}]",
+            self.header_type, self.header_name, self.size
         )
     }
 }

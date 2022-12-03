@@ -1,34 +1,20 @@
-use byteorder::BigEndian;
-use byteorder::{LittleEndian, ReadBytesExt};
-use std::fmt::Debug;
-use std::fmt::Formatter;
-use std::fmt::Result;
-use std::fs::File;
-use std::io;
-use std::io::Read;
-
+mod lfd_file;
 mod lfd_header;
 
-use lfd_header::{LfdHeader, LfdHeaderType};
+use std::fs;
+use std::string::String;
 
-fn main() -> io::Result<()> {
-    println!("Hello, world!");
+use crate::lfd_file::LfdFile;
 
-    let mut file = File::open("data/BATTLE2.LFD").expect("should open");
+fn main() -> Result<(), String> {
+    println!("Tie Fighter LFD Tool");
 
-    for _ in 0..5 {
-        let mut header = LfdHeader {
-            lfd_header_type: file.read_u32::<BigEndian>()?,
-            ..Default::default()
-        };
-        // let mut header = LfdHeader::default();
-        // file.read_exact(&mut header.lfd_header_type)?;
-        file.read_exact(&mut header.lfd_header_name)?;
-        header.lfd_size = file.read_i32::<LittleEndian>()?;
-        println!("{header:?}");
+    for entry in fs::read_dir("data/").map_err(|e| format!("Error reading directory: {e}"))? {
+        let entry = entry.map_err(|e| format!("Invalid entry: {e}"))?;
 
-        let header_type = LfdHeaderType::from_u32(header.lfd_header_type);
-        println!("header type: {header_type:?}");
+        if entry.path().is_file() {
+            let _lfd_file = LfdFile::from_file_name(entry.path().to_str().expect("asdf"));
+        }
     }
 
     Ok(())
