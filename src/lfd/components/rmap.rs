@@ -1,9 +1,10 @@
 use crate::lfd::lfd_header::LfdHeader;
+use crate::lfd::traits::lfd_print::LfdPrint;
+use crate::lfd::traits::lfd_print::INDENT_SIZE;
 use crate::lfd::traits::lfd_reader::LfdReader;
 
 use std::fmt::Debug;
 use std::fmt::Formatter;
-use std::io::Write;
 
 pub struct Rmap {
     pub header: LfdHeader,
@@ -37,13 +38,21 @@ impl LfdReader for Rmap {
 
 impl Debug for Rmap {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        // write!(f, "RMAP");
-        write!("{:?}", self.header)
+        write!(f, "{:?}", self.header)?;
 
-        //         for sub_header in &self.sub_headers {
-        //             write!("    {:?}", sub_header);
-        //         }
+        for sub_header in &self.sub_headers {
+            write!(f, "    {:?}", sub_header)?;
+        }
 
-        //         Ok(())
+        Ok(())
+    }
+}
+
+impl LfdPrint for Rmap {
+    fn lfd_print(&self, indent: usize) {
+        self.header.lfd_print(indent);
+        for sub_header in &self.sub_headers {
+            sub_header.lfd_print(indent + INDENT_SIZE);
+        }
     }
 }

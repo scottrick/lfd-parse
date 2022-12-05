@@ -1,5 +1,7 @@
 use crate::lfd::lfd_type::LfdHeaderType;
+use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_reader::LfdReader;
+
 use byteorder::BigEndian;
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::fmt::Debug;
@@ -46,6 +48,16 @@ impl Debug for LfdHeader {
         write!(
             f,
             "LfdHeader[{:?}] Name[{}] Size[{}]",
+            self.header_type, self.header_name, self.size
+        )
+    }
+}
+
+impl LfdPrint for LfdHeader {
+    fn lfd_print(&self, indent: usize) {
+        let spaces = " ".repeat(indent);
+        println!(
+            "{spaces}LfdHeader[{:?}] Name[{}] Size[{}]",
             self.header_type, self.header_name, self.size
         )
     }

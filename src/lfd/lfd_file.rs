@@ -1,11 +1,16 @@
+use std::fmt::Debug;
+use std::fmt::Formatter;
 use std::fs::File;
 use std::io::BufReader;
 use std::string::String;
 
-use super::lfd_archive::LfdArchive;
-use super::traits::lfd_reader::LfdReader;
+use crate::lfd::lfd_archive::LfdArchive;
+use crate::lfd::traits::lfd_print::LfdPrint;
+use crate::lfd::traits::lfd_print::INDENT_SIZE;
+use crate::lfd::traits::lfd_reader::LfdReader;
 
 pub struct LfdFile {
+    pub file_name: String,
     pub archive: LfdArchive,
 }
 
@@ -18,25 +23,26 @@ impl LfdFile {
 
         let archive = LfdArchive::from_reader(&mut reader)?;
 
-        /*
-        let lfd_header = LfdHeader::read_from_buffer(&mut buf_reader)?;
-
-        println!("{file_name}");
-        println!("    {lfd_header:?}");
-
-        let num_sub_headers = lfd_header.size / 0x10;
-
-        for _ in 0..num_sub_headers {
-            let sub_header = LfdHeader::read_from_buffer(&mut buf_reader)?;
-            println!("        {sub_header:?}");
-        }
-
         Ok(LfdFile {
             file_name: file_name.to_string(),
-            lfd_header,
+            archive,
         })
-            */
+    }
+}
 
-        Ok(LfdFile { archive })
+impl Debug for LfdFile {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "LfdFile")?;
+        write!(f, "  {:?}", self.archive)?;
+
+        Ok(())
+    }
+}
+
+impl LfdPrint for LfdFile {
+    fn lfd_print(&self, indent: usize) {
+        let spaces = " ".repeat(indent);
+        println!("{spaces}LfdFile [{}]", self.file_name);
+        self.archive.lfd_print(indent + INDENT_SIZE);
     }
 }

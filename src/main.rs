@@ -4,6 +4,7 @@ use std::fs;
 use std::string::String;
 
 use crate::lfd::lfd_file::LfdFile;
+use crate::lfd::traits::lfd_print::LfdPrint;
 
 fn main() -> Result<(), String> {
     println!("Tie Fighter LFD Tool");
@@ -12,8 +13,10 @@ fn main() -> Result<(), String> {
         let entry = entry.map_err(|e| format!("Invalid entry: {e}"))?;
 
         if entry.path().is_file() {
-            let _lfd_file =
-                LfdFile::read_from_file(entry.path().to_str().expect("Failed to get file name."));
+            let lfd_file =
+                LfdFile::read_from_file(entry.path().to_str().expect("Failed to get file name."))?;
+
+            lfd_file.lfd_print(0);
         }
     }
 
