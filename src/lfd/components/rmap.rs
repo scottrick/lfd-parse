@@ -38,17 +38,15 @@ impl LfdReader for Rmap {
 
 impl Debug for Rmap {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.header)?;
-
-        for sub_header in &self.sub_headers {
-            write!(f, "    {:?}", sub_header)?;
-        }
-
-        Ok(())
+        f.write_str(&self.lfd_get_print_str())
     }
 }
 
 impl LfdPrint for Rmap {
+    fn lfd_get_print_str(&self) -> String {
+        self.header.lfd_get_print_str()
+    }
+
     fn lfd_print(&self, indent: usize) {
         self.header.lfd_print(indent);
         for sub_header in &self.sub_headers {

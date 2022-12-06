@@ -45,19 +45,14 @@ impl LfdReader for LfdHeader {
 
 impl Debug for LfdHeader {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "LfdHeader[{:?}] Name[{}] Size[{}]",
-            self.header_type, self.header_name, self.size
-        )
+        f.write_str(&self.lfd_get_print_str())
     }
 }
 
 impl LfdPrint for LfdHeader {
-    fn lfd_print(&self, indent: usize) {
-        let spaces = " ".repeat(indent);
-        println!(
-            "{spaces}LfdHeader[{:?}] Name[{}] Size[{}]",
+    fn lfd_get_print_str(&self) -> String {
+        format!(
+            "LfdHeader[{:?}] Name[{}] Size[{}]",
             self.header_type, self.header_name, self.size
         )
     }

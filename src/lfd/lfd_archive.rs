@@ -24,17 +24,19 @@ impl LfdReader for LfdArchive {
 
 impl Debug for LfdArchive {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "LfdArchive")?;
-        write!(f, "  {:?}", self.rmap)?;
-
-        Ok(())
+        f.write_str(&self.lfd_get_print_str())
     }
 }
 
 impl LfdPrint for LfdArchive {
+    fn lfd_get_print_str(&self) -> String {
+        String::from("LfdArchive")
+    }
+
     fn lfd_print(&self, indent: usize) {
         let spaces = " ".repeat(indent);
-        println!("{spaces}LfdArchive");
+        println!("{spaces}{}", self.lfd_get_print_str());
+
         self.rmap.lfd_print(indent + INDENT_SIZE);
     }
 }

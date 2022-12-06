@@ -32,17 +32,19 @@ impl LfdFile {
 
 impl Debug for LfdFile {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "LfdFile")?;
-        write!(f, "  {:?}", self.archive)?;
-
-        Ok(())
+        f.write_str(&self.lfd_get_print_str())
     }
 }
 
 impl LfdPrint for LfdFile {
+    fn lfd_get_print_str(&self) -> String {
+        format!("LfdFile [{}]", self.file_name)
+    }
+
     fn lfd_print(&self, indent: usize) {
         let spaces = " ".repeat(indent);
-        println!("{spaces}LfdFile [{}]", self.file_name);
+        println!("{spaces}{}", self.lfd_get_print_str());
+
         self.archive.lfd_print(indent + INDENT_SIZE);
     }
 }
