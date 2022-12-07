@@ -1,12 +1,12 @@
 use crate::lfd::lfd_type::LfdHeaderType;
 use crate::lfd::traits::lfd_print::LfdPrint;
-use crate::lfd::traits::lfd_reader::LfdReader;
 
 use byteorder::BigEndian;
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::io::Read;
+use std::io::Seek;
 use std::str::from_utf8;
 
 pub struct LfdHeader {
@@ -15,8 +15,8 @@ pub struct LfdHeader {
     pub size: i32,
 }
 
-impl LfdReader for LfdHeader {
-    fn from_reader(reader: &mut impl Read) -> Result<Self, String>
+impl LfdHeader {
+    pub fn from_reader(reader: &mut (impl Read + Seek)) -> Result<Self, String>
     where
         Self: Sized,
     {
@@ -52,7 +52,7 @@ impl Debug for LfdHeader {
 impl LfdPrint for LfdHeader {
     fn lfd_get_print_str(&self) -> String {
         format!(
-            "LfdHeader[{:?}] Name[{}] Size[{}]",
+            "LfdHeader[{:?}] name[{}] size[{}]",
             self.header_type, self.header_name, self.size
         )
     }

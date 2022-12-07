@@ -7,7 +7,6 @@ use std::string::String;
 use crate::lfd::lfd_archive::LfdArchive;
 use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_print::INDENT_SIZE;
-use crate::lfd::traits::lfd_reader::LfdReader;
 
 pub struct LfdFile {
     pub file_name: String,

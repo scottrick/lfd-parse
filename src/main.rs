@@ -7,7 +7,7 @@ use crate::lfd::lfd_file::LfdFile;
 use crate::lfd::traits::lfd_print::LfdPrint;
 
 fn main() -> Result<(), String> {
-    println!("Tie Fighter LFD Tool");
+    println!("LFD Parse Tool");
 
     for entry in fs::read_dir("data/").map_err(|e| format!("Error reading directory: {e}"))? {
         let entry = entry.map_err(|e| format!("Invalid entry: {e}"))?;

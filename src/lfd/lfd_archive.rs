@@ -2,23 +2,25 @@ use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::string::String;
 
-use crate::lfd::components::rmap::Rmap;
+use crate::lfd::resources;
 use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_print::INDENT_SIZE;
-use crate::lfd::traits::lfd_reader::LfdReader;
+use crate::lfd::traits::lfd_resource::LfdResource;
+
+use std::io::Read;
+use std::io::Seek;
 
 pub struct LfdArchive {
-    pub rmap: Rmap, //need to change to handle any type.  cockpit lfd evidently don't start with
-                    //rmap.
+    pub resource: Box<dyn LfdResource>,
 }
 
-impl LfdReader for LfdArchive {
-    fn from_reader(reader: &mut impl std::io::Read) -> Result<Self, String>
+impl LfdArchive {
+    pub fn from_reader(reader: &mut (impl Read + Seek)) -> Result<Self, String>
     where
         Self: Sized,
     {
-        let rmap = Rmap::from_reader(reader)?;
-        Ok(LfdArchive { rmap })
+        let resource = resources::create_from_reader(reader)?;
+        Ok(LfdArchive { resource })
     }
 }
 
@@ -37,6 +39,6 @@ impl LfdPrint for LfdArchive {
         let spaces = " ".repeat(indent);
         println!("{spaces}{}", self.lfd_get_print_str());
 
-        self.rmap.lfd_print(indent + INDENT_SIZE);
+        self.resource.lfd_print(indent + INDENT_SIZE);
     }
 }
