@@ -1,0 +1,4 @@
+* Update UNKNOWN to read and store the bytes it's skipping over.
+* Implement to_writer.
+* Read / Write the LFDs, and have an automated way to compare them.  
+    * Sounds like a test?!?!?
