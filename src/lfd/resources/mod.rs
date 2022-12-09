@@ -9,9 +9,8 @@ use crate::lfd::traits::lfd_resource::LfdResource;
 use super::lfd_type::LfdHeaderType;
 
 use std::io::Read;
-use std::io::Seek;
 
-pub fn create_from_reader(reader: &mut (impl Read + Seek)) -> Result<Box<dyn LfdResource>, String> {
+pub fn create_from_reader(reader: &mut dyn Read) -> Result<Box<dyn LfdResource>, String> {
     let header = LfdHeader::from_reader(reader)?;
 
     match header.header_type {

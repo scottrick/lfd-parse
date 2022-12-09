@@ -4,26 +4,42 @@ use crate::lfd::traits::lfd_resource::LfdResource;
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use std::io::Read;
-use std::io::Seek;
 
 pub struct Unknown {
     pub header: LfdHeader,
+    pub data: Vec<u8>,
 }
 
 impl LfdResource for Unknown {
-    fn get_lfd_header(&self) -> &LfdHeader {
-        &self.header
-    }
-
-    fn from_reader(reader: &mut (impl Read + Seek), header: LfdHeader) -> Result<Self, String>
+    fn from_reader(reader: &mut dyn Read, header: LfdHeader) -> Result<Self, String>
     where
         Self: Sized,
     {
-        reader
-            .seek(std::io::SeekFrom::Current(header.size.into()))
-            .map_err(|e| format!("Error seeking past unknown {e}"))?;
+        let size: usize = usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
+        let mut data: Vec<u8> = vec![0; size];
 
-        Ok(Unknown { header })
+        reader
+            .read_exact(&mut data)
+            .map_err(|e| format!("Error reading Unknown buffer: {e}"))?;
+
+        Ok(Unknown {
+            header,
+            data: Vec::new(),
+        })
+    }
+
+    fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+        self.header.to_writer(writer)?;
+
+        writer
+            .write(&self.data)
+            .map_err(|e| format!("Error writing Unknown data: {e}"))?;
+
+        Ok(())
+    }
+
+    fn get_lfd_header(&self) -> &LfdHeader {
+        &self.header
     }
 
     fn lfd_get_print_str(&self) -> String {

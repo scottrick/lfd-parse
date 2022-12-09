@@ -43,4 +43,11 @@ impl LfdHeaderType {
             _ => LfdHeaderType::Unkn,
         }
     }
+
+    pub fn to_u32(&self) -> u32 {
+        match self {
+            LfdHeaderType::Anim => 0x12345678u32,
+            _ => 0xDEADBEEF_u32,
+        }
+    }
 }

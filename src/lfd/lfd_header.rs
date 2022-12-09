@@ -2,12 +2,10 @@ use crate::lfd::lfd_type::LfdHeaderType;
 use crate::lfd::traits::lfd_print::LfdPrint;
 
 use byteorder::BigEndian;
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::io::Read;
-use std::io::Seek;
-use std::str::from_utf8;
 
 pub struct LfdHeader {
     pub header_type: LfdHeaderType,
@@ -16,7 +14,7 @@ pub struct LfdHeader {
 }
 
 impl LfdHeader {
-    pub fn from_reader(reader: &mut (impl Read + Seek)) -> Result<Self, String>
+    pub fn from_reader(reader: &mut dyn Read) -> Result<Self, String>
     where
         Self: Sized,
     {
@@ -24,22 +22,40 @@ impl LfdHeader {
             .read_u32::<BigEndian>()
             .map_err(|e| format!("Error reading lfd_header_type: {e}"))?;
 
-        let mut name: [u8; 8] = [0; 8];
+        let mut name: Vec<u8> = vec![0; 8];
         reader
             .read_exact(&mut name)
             .map_err(|e| format!("Error reading name: {e}"))?;
 
-        let name = from_utf8(&name).map_err(|e| format!("Error reading lfd name: {e}"))?;
+        let header_name =
+            String::from_utf8(name).map_err(|e| format!("Error reading lfd name: {e}"))?;
 
-        let lfd_size = reader
+        let size = reader
             .read_i32::<LittleEndian>()
             .map_err(|e| format!("Error reading header_size: {e}"))?;
 
         Ok(LfdHeader {
             header_type: LfdHeaderType::from_u32(lfd_type),
-            header_name: name.to_string(),
-            size: lfd_size,
+            header_name,
+            size,
         })
+    }
+
+    pub fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+        writer
+            .write_u32::<BigEndian>(self.header_type.to_u32())
+            .map_err(|e| format!("Error writing lfd type: {e}"))?;
+
+        let name_clone = self.header_name.clone().into_bytes();
+        writer
+            .write_all(&name_clone)
+            .map_err(|e| format!("Error writing header name: {e}"))?;
+
+        writer
+            .write_i32::<LittleEndian>(self.size)
+            .map_err(|e| format!("Error writing header size: {e}"))?;
+
+        Ok(())
     }
 }
 

@@ -6,7 +6,6 @@ use crate::lfd::traits::lfd_resource::LfdResource;
 use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::io::Read;
-use std::io::Seek;
 
 pub struct Rmap {
     pub header: LfdHeader,
@@ -15,11 +14,7 @@ pub struct Rmap {
 }
 
 impl LfdResource for Rmap {
-    fn get_lfd_header(&self) -> &LfdHeader {
-        &self.header
-    }
-
-    fn from_reader(reader: &mut (impl Read + Seek), header: LfdHeader) -> Result<Self, String>
+    fn from_reader(reader: &mut dyn Read, header: LfdHeader) -> Result<Self, String>
     where
         Self: Sized,
     {
@@ -44,6 +39,14 @@ impl LfdResource for Rmap {
             sub_headers,
             resources,
         })
+    }
+
+    fn to_writer(&self, _writer: &mut dyn std::io::Write) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn get_lfd_header(&self) -> &LfdHeader {
+        &self.header
     }
 
     fn lfd_get_print_str(&self) -> String {
