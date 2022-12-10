@@ -20,22 +20,22 @@ impl LfdHeader {
     {
         let lfd_type = reader
             .read_u32::<BigEndian>()
-            .map_err(|e| format!("Error reading lfd_header_type: {e}"))?;
+            .map_err(|e| format!("Error reading lfd type: {e}"))?;
 
         let mut name: Vec<u8> = vec![0; 8];
         reader
             .read_exact(&mut name)
-            .map_err(|e| format!("Error reading name: {e}"))?;
+            .map_err(|e| format!("Error reading header name: {e}"))?;
 
         let header_name =
-            String::from_utf8(name).map_err(|e| format!("Error reading lfd name: {e}"))?;
+            String::from_utf8(name).map_err(|e| format!("Error reading header name: {e}"))?;
 
         let size = reader
             .read_i32::<LittleEndian>()
-            .map_err(|e| format!("Error reading header_size: {e}"))?;
+            .map_err(|e| format!("Error reading header size: {e}"))?;
 
         Ok(LfdHeader {
-            header_type: LfdHeaderType::from_u32(lfd_type),
+            header_type: LfdHeaderType::from(lfd_type),
             header_name,
             size,
         })

@@ -22,10 +22,7 @@ impl LfdResource for Unknown {
             .read_exact(&mut data)
             .map_err(|e| format!("Error reading Unknown buffer: {e}"))?;
 
-        Ok(Unknown {
-            header,
-            data: Vec::new(),
-        })
+        Ok(Unknown { header, data })
     }
 
     fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {

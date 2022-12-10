@@ -14,7 +14,7 @@ pub fn create_from_reader(reader: &mut dyn Read) -> Result<Box<dyn LfdResource>,
     let header = LfdHeader::from_reader(reader)?;
 
     match header.header_type {
-        LfdHeaderType::Rmap => {
+        LfdHeaderType::Rmap(_) => {
             let rmap = Rmap::from_reader(reader, header)?;
             Ok(Box::from(rmap))
         }

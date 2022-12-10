@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::fs::File;
 use std::io::BufReader;
+use std::io::BufWriter;
 use std::string::String;
 
 use crate::lfd::lfd_archive::LfdArchive;
@@ -26,6 +27,15 @@ impl LfdFile {
             file_name: file_name.to_string(),
             archive,
         })
+    }
+
+    pub fn write_to_file(&self) -> Result<(), String> {
+        let file = File::create(self.file_name.clone())
+            .map_err(|e| format!("Error creating file for writing: {e}"))?;
+
+        let mut writer = BufWriter::new(file);
+
+        self.archive.to_writer(&mut writer)
     }
 }
 

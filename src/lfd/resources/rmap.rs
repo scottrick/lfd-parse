@@ -41,7 +41,17 @@ impl LfdResource for Rmap {
         })
     }
 
-    fn to_writer(&self, _writer: &mut dyn std::io::Write) -> Result<(), String> {
+    fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+        self.header.to_writer(writer)?;
+
+        for sub_header in self.sub_headers.iter() {
+            sub_header.to_writer(writer)?;
+        }
+
+        for resource in self.resources.iter() {
+            resource.to_writer(writer)?;
+        }
+
         Ok(())
     }
 
