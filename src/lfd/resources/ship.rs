@@ -1,3 +1,6 @@
+use byteorder::LittleEndian;
+use byteorder::ReadBytesExt;
+
 use crate::lfd::resources::LfdHeader;
 use crate::lfd::traits::lfd_resource::LfdResource;
 
@@ -7,6 +10,12 @@ use std::io::Read;
 
 pub struct Ship {
     pub header: LfdHeader,
+    pub length: u16,
+    pub unknown_1: Vec<u8>,
+    pub num_components: u8,
+    pub num_shading_sets: u8,
+    pub unknown_2: u16,
+    pub shading_sets: Vec<ShadingSet>,
 }
 
 impl LfdResource for Ship {
@@ -14,16 +23,55 @@ impl LfdResource for Ship {
     where
         Self: Sized,
     {
-        let size_left: usize =
-            usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
-        let size_left = size_left;
-        let mut data: Vec<u8> = vec![0; size_left];
+        let length: u16 = reader
+            .read_u16::<LittleEndian>()
+            .map_err(|e| format!("Error reading length: {e}"))?;
 
+        let mut unknown_1: Vec<u8> = vec![0; 30];
+        reader
+            .read_exact(&mut unknown_1)
+            .map_err(|e| format!("Error reading ship unknown_1: {e}"))?;
+
+        let num_components: u8 = reader
+            .read_u8()
+            .map_err(|e| format!("Error reading num_components: {e}"))?;
+
+        let num_shading_sets: u8 = reader
+            .read_u8()
+            .map_err(|e| format!("Error reading num_shading_sets: {e}"))?;
+
+        let unknown_2: u16 = reader
+            .read_u16::<LittleEndian>()
+            .map_err(|e| format!("Error reading unknown_2: {e}"))?;
+
+        let mut shading_sets: Vec<ShadingSet> = Vec::new();
+        for _ in 0..num_shading_sets {
+            let shading_set = ShadingSet::from_reader(reader)
+                .map_err(|e| format!("Error reading shading set: {e}"))?;
+            shading_sets.push(shading_set);
+        }
+
+        let shading_set_size: usize = usize::try_from(num_shading_sets * 6)
+            .map_err(|e| format!("Invalid shading set size: {e}"))?;
+
+        // Read remaining bytes...
+        let remaining_bytes: usize =
+            usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
+        let remaining_bytes = remaining_bytes - 36 - shading_set_size;
+        let mut data: Vec<u8> = vec![0; remaining_bytes];
         reader
             .read_exact(&mut data)
             .map_err(|e| format!("Error reading Unknown buffer: {e}"))?;
 
-        Ok(Ship { header })
+        Ok(Ship {
+            header,
+            length,
+            unknown_1,
+            num_components,
+            num_shading_sets,
+            unknown_2,
+            shading_sets,
+        })
     }
 
     fn to_writer(&self, _writer: &mut dyn std::io::Write) -> Result<(), String> {
@@ -35,7 +83,11 @@ impl LfdResource for Ship {
     }
 
     fn lfd_get_print_str(&self) -> String {
-        format!("Ship[{}]", self.header.header_name,)
+        format!(
+            // "Ship[{} length: {:?} num_components: {:?} num_shading_sets: {:?} shading_sets: {:?}]",
+            "Ship[{} num_shading_sets: {:?} shading_sets: {:?}]",
+            self.header.header_name, self.num_shading_sets, self.shading_sets,
+        )
     }
 
     fn lfd_print(&self, indent: usize) {
@@ -47,5 +99,27 @@ impl LfdResource for Ship {
 impl Debug for Ship {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.lfd_get_print_str())
+    }
+}
+
+pub struct ShadingSet {
+    pub unknown: [u8; 6],
+}
+
+impl ShadingSet {
+    fn from_reader(reader: &mut dyn Read) -> Result<Self, String> {
+        let mut unknown: [u8; 6] = [0; 6];
+        reader
+            .read_exact(&mut unknown)
+            .map_err(|e| format!("Error reading Unknown buffer: {e}"))?;
+
+        Ok(Self { unknown })
+    }
+}
+
+impl Debug for ShadingSet {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let debug_string = format!("ShadingSet{:02X?}", self.unknown);
+        f.write_str(&debug_string)
     }
 }
