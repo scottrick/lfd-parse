@@ -5,11 +5,11 @@ pub mod unknown;
 
 use crate::lfd::lfd_header::LfdHeader;
 use crate::lfd::resources::rmap::Rmap;
-use crate::lfd::resources::ship::Ship;
 use crate::lfd::resources::unknown::Unknown;
 use crate::lfd::traits::lfd_resource::LfdResource;
 
 use self::delt::Delt;
+use self::ship::Ship;
 
 use super::lfd_type::LfdHeaderType;
 
