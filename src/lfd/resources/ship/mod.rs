@@ -12,6 +12,7 @@ use core::fmt::Debug;
 use core::fmt::Formatter;
 use std::io::Read;
 
+use self::mesh_settings::MeshSettings;
 use self::shading_set::ShadingSet;
 
 pub struct Ship {
@@ -22,6 +23,7 @@ pub struct Ship {
     pub num_shading_sets: u8,
     pub unknown_2: u16,
     pub shading_sets: Vec<ShadingSet>,
+    pub mesh_settings: Vec<MeshSettings>,
 }
 
 impl LfdResource for Ship {
@@ -57,13 +59,22 @@ impl LfdResource for Ship {
             shading_sets.push(shading_set);
         }
 
-        let shading_set_size: usize = usize::try_from(num_shading_sets * 6)
-            .map_err(|e| format!("Invalid shading set size: {e}"))?;
+        let mut mesh_settings: Vec<MeshSettings> = Vec::new();
+        for _ in 0..num_components {
+            let mesh_setting = MeshSettings::from_reader(reader)
+                .map_err(|e| format!("Error reading mesh setting: {e}"))?;
+            mesh_settings.push(mesh_setting);
+        }
+
+        // calculate remaining bytes...
+        let shading_set_size = usize::from(num_shading_sets) * 6;
+        let mesh_settings_size = usize::from(num_components) * 0x40;
 
         // Read remaining bytes...
         let remaining_bytes: usize =
             usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
-        let remaining_bytes = remaining_bytes - 36 - shading_set_size;
+        let remaining_bytes = remaining_bytes - 36 - shading_set_size - mesh_settings_size;
+
         let mut data: Vec<u8> = vec![0; remaining_bytes];
         reader
             .read_exact(&mut data)
@@ -77,6 +88,7 @@ impl LfdResource for Ship {
             num_shading_sets,
             unknown_2,
             shading_sets,
+            mesh_settings,
         })
     }
 
@@ -90,8 +102,8 @@ impl LfdResource for Ship {
 
     fn lfd_get_print_str(&self) -> String {
         format!(
-            "Ship[{} num_shading_sets: {:?} shading_sets: {:?}]",
-            self.header.header_name, self.num_shading_sets, self.shading_sets,
+            "Ship[{} mesh_settings: {:?}]",
+            self.header.header_name, self.mesh_settings
         )
     }
 
