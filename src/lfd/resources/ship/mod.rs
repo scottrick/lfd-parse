@@ -1,6 +1,9 @@
+pub mod lod_header;
+pub mod lod_mesh;
 pub mod mesh_settings;
 pub mod mesh_type;
 pub mod shading_set;
+pub mod ship_component;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
@@ -14,6 +17,7 @@ use std::io::Read;
 
 use self::mesh_settings::MeshSettings;
 use self::shading_set::ShadingSet;
+use self::ship_component::ShipComponent;
 
 pub struct Ship {
     pub header: LfdHeader,
@@ -24,6 +28,7 @@ pub struct Ship {
     pub unknown_2: u16,
     pub shading_sets: Vec<ShadingSet>,
     pub mesh_settings: Vec<MeshSettings>,
+    pub ship_components: Vec<ShipComponent>,
 }
 
 impl LfdResource for Ship {
@@ -66,14 +71,26 @@ impl LfdResource for Ship {
             mesh_settings.push(mesh_setting);
         }
 
+        let mut num_ship_lod_headers: usize = 0;
+        let mut ship_components: Vec<ShipComponent> = Vec::new();
+        for _ in 0..num_components {
+            let ship_component = ShipComponent::from_reader(reader)
+                .map_err(|e| format!("Error reading ship component: {e}"))?;
+            num_ship_lod_headers += ship_component.lod_headers.len();
+            ship_components.push(ship_component);
+        }
+
         // calculate remaining bytes...
         let shading_set_size = usize::from(num_shading_sets) * 6;
         let mesh_settings_size = usize::from(num_components) * 0x40;
+        let ship_components_size = num_ship_lod_headers * 6;
+        // let ship_components_size: usize = 6;
 
         // Read remaining bytes...
         let remaining_bytes: usize =
             usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
-        let remaining_bytes = remaining_bytes - 36 - shading_set_size - mesh_settings_size;
+        let remaining_bytes =
+            remaining_bytes - 36 - shading_set_size - mesh_settings_size - ship_components_size;
 
         let mut data: Vec<u8> = vec![0; remaining_bytes];
         reader
@@ -89,6 +106,7 @@ impl LfdResource for Ship {
             unknown_2,
             shading_sets,
             mesh_settings,
+            ship_components,
         })
     }
 
@@ -102,8 +120,8 @@ impl LfdResource for Ship {
 
     fn lfd_get_print_str(&self) -> String {
         format!(
-            "Ship[{} mesh_settings: {:?}]",
-            self.header.header_name, self.mesh_settings
+            "Ship[{} mesh_settings: {:?}, ship_components: {:?}]",
+            self.header.header_name, self.mesh_settings, self.ship_components,
         )
     }
 
