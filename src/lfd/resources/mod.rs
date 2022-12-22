@@ -3,6 +3,9 @@ pub mod rmap;
 pub mod ship;
 pub mod unknown;
 
+use std::fs::File;
+use std::io::BufReader;
+
 use crate::lfd::lfd_header::LfdHeader;
 use crate::lfd::resources::rmap::Rmap;
 use crate::lfd::resources::unknown::Unknown;
@@ -13,9 +16,7 @@ use self::ship::Ship;
 
 use super::lfd_type::LfdHeaderType;
 
-use std::io::Read;
-
-pub fn create_from_reader(reader: &mut dyn Read) -> Result<Box<dyn LfdResource>, String> {
+pub fn create_from_reader(reader: &mut BufReader<File>) -> Result<Box<dyn LfdResource>, String> {
     let header = LfdHeader::from_reader(reader)?;
 
     match header.header_type {

@@ -5,6 +5,8 @@ use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
 use core::fmt::Debug;
 use core::fmt::Formatter;
+use std::fs::File;
+use std::io::BufReader;
 use std::io::Read;
 
 pub struct Delt {
@@ -16,7 +18,7 @@ pub struct Delt {
 }
 
 impl LfdResource for Delt {
-    fn from_reader(reader: &mut dyn Read, header: LfdHeader) -> Result<Self, String>
+    fn from_reader(reader: &mut BufReader<File>, header: LfdHeader) -> Result<Self, String>
     where
         Self: Sized,
     {

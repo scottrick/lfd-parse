@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 use std::fmt::Formatter;
+use std::fs::File;
+use std::io::BufReader;
 use std::io::Write;
 use std::string::String;
 
@@ -8,14 +10,12 @@ use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_print::INDENT_SIZE;
 use crate::lfd::traits::lfd_resource::LfdResource;
 
-use std::io::Read;
-
 pub struct LfdArchive {
     pub resource: Box<dyn LfdResource>,
 }
 
 impl LfdArchive {
-    pub fn from_reader(reader: &mut dyn Read) -> Result<Self, String>
+    pub fn from_reader(reader: &mut BufReader<File>) -> Result<Self, String>
     where
         Self: Sized,
     {

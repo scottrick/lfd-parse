@@ -5,7 +5,8 @@ use crate::lfd::traits::lfd_resource::LfdResource;
 
 use std::fmt::Debug;
 use std::fmt::Formatter;
-use std::io::Read;
+use std::fs::File;
+use std::io::BufReader;
 
 pub struct Rmap {
     pub header: LfdHeader,
@@ -14,7 +15,7 @@ pub struct Rmap {
 }
 
 impl LfdResource for Rmap {
-    fn from_reader(reader: &mut dyn Read, header: LfdHeader) -> Result<Self, String>
+    fn from_reader(reader: &mut BufReader<File>, header: LfdHeader) -> Result<Self, String>
     where
         Self: Sized,
     {

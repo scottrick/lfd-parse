@@ -21,11 +21,8 @@ impl ShipComponent {
                 has_more_headers = false;
             }
 
-            println!("read header: {:?}", header);
             lod_headers.push(header);
         }
-
-        println!(" -----> END HEADERS!");
 
         Ok(Self { lod_headers })
     }

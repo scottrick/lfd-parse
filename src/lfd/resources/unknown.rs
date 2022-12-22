@@ -3,6 +3,8 @@ use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_resource::LfdResource;
 use core::fmt::Debug;
 use core::fmt::Formatter;
+use std::fs::File;
+use std::io::BufReader;
 use std::io::Read;
 
 pub struct Unknown {
@@ -11,7 +13,7 @@ pub struct Unknown {
 }
 
 impl LfdResource for Unknown {
-    fn from_reader(reader: &mut dyn Read, header: LfdHeader) -> Result<Self, String>
+    fn from_reader(reader: &mut BufReader<File>, header: LfdHeader) -> Result<Self, String>
     where
         Self: Sized,
     {

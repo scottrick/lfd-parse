@@ -13,7 +13,11 @@ use crate::lfd::traits::lfd_resource::LfdResource;
 
 use core::fmt::Debug;
 use core::fmt::Formatter;
+use std::fs::File;
+use std::io::BufReader;
 use std::io::Read;
+use std::io::Seek;
+use std::io::SeekFrom;
 
 use self::mesh_settings::MeshSettings;
 use self::shading_set::ShadingSet;
@@ -32,13 +36,18 @@ pub struct Ship {
 }
 
 impl LfdResource for Ship {
-    fn from_reader(reader: &mut dyn Read, header: LfdHeader) -> Result<Self, String>
+    fn from_reader(reader: &mut BufReader<File>, header: LfdHeader) -> Result<Self, String>
     where
         Self: Sized,
     {
         let length: u16 = reader
             .read_u16::<LittleEndian>()
             .map_err(|e| format!("Error reading length: {e}"))?;
+
+        let mesh_cursor_pos = reader
+            .stream_position()
+            .map_err(|e| format!("Error reading stream position: {e}"))?;
+        let end_pos = mesh_cursor_pos + length as u64;
 
         let mut unknown_1: Vec<u8> = vec![0; 30];
         reader
@@ -71,31 +80,31 @@ impl LfdResource for Ship {
             mesh_settings.push(mesh_setting);
         }
 
-        let mut num_ship_lod_headers: usize = 0;
         let mut ship_components: Vec<ShipComponent> = Vec::new();
-        for _ in 0..num_components {
+        for settings in mesh_settings.iter() {
+            // settings.component_offset
+            reader
+                .seek(SeekFrom::Start(settings.component_start))
+                .map_err(|e| format!("Error seeing ship component: {e}"))?;
+
             let ship_component = ShipComponent::from_reader(reader)
                 .map_err(|e| format!("Error reading ship component: {e}"))?;
-            num_ship_lod_headers += ship_component.lod_headers.len();
+
             ship_components.push(ship_component);
         }
 
-        // calculate remaining bytes...
-        let shading_set_size = usize::from(num_shading_sets) * 6;
-        let mesh_settings_size = usize::from(num_components) * 0x40;
-        let ship_components_size = num_ship_lod_headers * 6;
-        // let ship_components_size: usize = 6;
+        // let mut num_ship_lod_headers: usize = 0;
+        // for _ in 0..num_components {
+        //     let ship_component = ShipComponent::from_reader(reader)
+        //         .map_err(|e| format!("Error reading ship component: {e}"))?;
+        //     num_ship_lod_headers += ship_component.lod_headers.len();
+        //     ship_components.push(ship_component);
+        // }
 
-        // Read remaining bytes...
-        let remaining_bytes: usize =
-            usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
-        let remaining_bytes =
-            remaining_bytes - 36 - shading_set_size - mesh_settings_size - ship_components_size;
-
-        let mut data: Vec<u8> = vec![0; remaining_bytes];
+        // Seek to the end of this ship component.
         reader
-            .read_exact(&mut data)
-            .map_err(|e| format!("Error reading Unknown buffer: {e}"))?;
+            .seek(SeekFrom::Start(end_pos))
+            .map_err(|e| format!("Error seeking end of ship: {e}"))?;
 
         Ok(Ship {
             header,

@@ -1,10 +1,11 @@
 use crate::lfd::lfd_header::LfdHeader;
 
-use std::io::Read;
+use std::fs::File;
+use std::io::BufReader;
 use std::io::Write;
 
 pub trait LfdResource {
-    fn from_reader(reader: &mut dyn Read, header: LfdHeader) -> Result<Self, String>
+    fn from_reader(reader: &mut BufReader<File>, header: LfdHeader) -> Result<Self, String>
     where
         Self: Sized;
 
