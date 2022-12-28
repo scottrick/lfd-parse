@@ -9,6 +9,7 @@ use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
 
 use crate::lfd::resources::LfdHeader;
+use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_resource::LfdResource;
 
 use core::fmt::Debug;
@@ -128,15 +129,27 @@ impl LfdResource for Ship {
     }
 
     fn lfd_get_print_str(&self) -> String {
-        format!(
-            "Ship[{} mesh_settings: {:?}, ship_components: {:?}]",
-            self.header.header_name, self.mesh_settings, self.ship_components,
-        )
+        format!("Ship[{}]", self.header.header_name)
     }
 
     fn lfd_print(&self, indent: usize) {
+        let settings_size = self.mesh_settings.len();
+        let components_size = self.ship_components.len();
+
+        if settings_size != components_size {
+            panic!("Invalid length.");
+        }
+
         let spaces = " ".repeat(indent);
         println!("{spaces}{}", self.lfd_get_print_str());
+
+        for i in 0..settings_size {
+            let setting = &self.mesh_settings[i];
+            let component = &self.ship_components[i];
+
+            setting.lfd_print(indent + 2);
+            component.lfd_print(indent + 2);
+        }
     }
 }
 

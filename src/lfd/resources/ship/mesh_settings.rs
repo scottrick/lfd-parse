@@ -6,6 +6,8 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
+use crate::lfd::traits::lfd_print::LfdPrint;
+
 use super::mesh_type::MeshType;
 
 pub struct MeshSettings {
@@ -55,7 +57,18 @@ impl MeshSettings {
 
 impl Debug for MeshSettings {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let debug_string = format!("{:?}, {:?}", self.mesh_type, self.component_start);
+        let debug_string = format!("MeshSettings {:?}", self.mesh_type,);
         f.write_str(&debug_string)
+    }
+}
+
+impl LfdPrint for MeshSettings {
+    fn lfd_print(&self, indent: usize) {
+        let spaces = " ".repeat(indent);
+        println!("{spaces}{}", self.lfd_get_print_str());
+    }
+
+    fn lfd_get_print_str(&self) -> String {
+        format!("{:?}", self)
     }
 }
