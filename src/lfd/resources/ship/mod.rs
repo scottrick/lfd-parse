@@ -4,6 +4,7 @@ pub mod mesh_settings;
 pub mod mesh_type;
 pub mod shading_set;
 pub mod ship_component;
+pub mod vertex16;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
