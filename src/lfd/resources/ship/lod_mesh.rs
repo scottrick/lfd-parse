@@ -8,8 +8,8 @@ use byteorder::ReadBytesExt;
 
 use crate::lfd::traits::lfd_print::LfdPrint;
 
-use super::mesh_vertices::MeshVertices;
 use super::vertex16::Vertex16;
+use super::vertex_array::VertexArray;
 
 // LodMesh
 /// {
@@ -31,24 +31,24 @@ use super::vertex16::Vertex16;
 ///              Unknown3[NumUnk2]
 /// }
 pub struct LodMesh {
-    signature: u8,
-    unknown_1: u8,
+    _signature: u8,
+    _unknown_1: u8,
     num_vertices: u8,
-    unknown_2: u8,
+    _unknown_2: u8,
     num_shapes: u8,
     color_indices: Vec<u8>,
     min_bound: Vertex16,
     max_bound: Vertex16,
-    mesh_vertices: MeshVertices,
+    mesh_vertices: VertexArray,
 }
 
 impl LodMesh {
     pub fn from_reader(reader: &mut BufReader<File>) -> Result<Self, String> {
-        let signature: u8 = reader
+        let _signature: u8 = reader
             .read_u8()
             .map_err(|e| format!("Error reading signature: {e}"))?;
 
-        let unknown_1: u8 = reader
+        let _unknown_1: u8 = reader
             .read_u8()
             .map_err(|e| format!("Error reading unknown_1: {e}"))?;
 
@@ -56,7 +56,7 @@ impl LodMesh {
             .read_u8()
             .map_err(|e| format!("Error reading num_vertices: {e}"))?;
 
-        let unknown_2: u8 = reader
+        let _unknown_2: u8 = reader
             .read_u8()
             .map_err(|e| format!("Error reading unknown_2: {e}"))?;
 
@@ -76,14 +76,14 @@ impl LodMesh {
         let max_bound =
             Vertex16::from_reader(reader).map_err(|e| format!("Error reading Vertex16: {e}"))?;
 
-        let mesh_vertices = MeshVertices::from_reader(reader, num_vertices)
+        let mesh_vertices = VertexArray::from_reader(reader, num_vertices)
             .map_err(|e| format!("Error reading MeshVertices: {e}"))?;
 
         Ok(Self {
-            signature,
-            unknown_1,
+            _signature,
+            _unknown_1,
             num_vertices,
-            unknown_2,
+            _unknown_2,
             num_shapes,
             color_indices,
             min_bound,
@@ -91,32 +91,38 @@ impl LodMesh {
             mesh_vertices,
         })
     }
+
+    pub fn obj_to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+        for v in self.mesh_vertices.vertices.iter() {
+            writeln!(writer, "v {:?} {:?} {:?}", v.x, v.y, v.z)
+                .map_err(|e| format!("Error writing mesh vertices to obj writer: {e}"))?;
+        }
+
+        Ok(())
+    }
 }
 
 impl Debug for LodMesh {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let debug_string = format!(
-            "LodMesh signature: {:?} u1: {:?} num_vertices: {:?} u2: {:?} num_shapes: {:?} color_indices: {:?}, min_bound: {:?}, max_bound: {:?}",
-            self.signature, self.unknown_1, self.num_vertices, self.unknown_2, self.num_shapes, self.color_indices, self.min_bound, self.max_bound
-        );
-        f.write_str(&debug_string)
+        // let debug_string = format!(
+        //     "LodMesh signature: {:?} u1: {:?} num_vertices: {:?} u2: {:?} num_shapes: {:?} color_indices: {:?}, min_bound: {:?}, max_bound: {:?}",
+        //     self.signature, self.unknown_1, self.num_vertices, self.unknown_2, self.num_shapes, self.color_indices, self.min_bound, self.max_bound
+        // );
+        let debug_string = "LodMesh";
+        f.write_str(debug_string)
     }
 }
 
 impl LfdPrint for LodMesh {
     fn lfd_print(&self, indent: usize) {
-        // let spaces = " ".repeat(indent);
-        // println!("{spaces}{}", self.lfd_get_print_str());
-
-        // println!("{spaces} num_vertices: {:?}", self.num_vertices);
-        // println!("{spaces} num_shapes: {:?}", self.num_shapes);
-        // println!("{spaces} color_indices: {:?}", self.color_indices);
-        // println!("{spaces} min_bound: {:?}", self.min_bound);
-        // println!("{spaces} max_bound: {:?}", self.max_bound);
-        // println!("{spaces} {:?}", self.mesh_vertices);
-
-        // obj print
-        self.mesh_vertices.obj_print();
+        let spaces = " ".repeat(indent);
+        println!("{spaces}{}", self.lfd_get_print_str());
+        println!("{spaces} num_vertices: {:?}", self.num_vertices);
+        println!("{spaces} num_shapes: {:?}", self.num_shapes);
+        println!("{spaces} color_indices: {:?}", self.color_indices);
+        println!("{spaces} min_bound: {:?}", self.min_bound);
+        println!("{spaces} max_bound: {:?}", self.max_bound);
+        println!("{spaces} {:?}", self.mesh_vertices);
     }
 
     fn lfd_get_print_str(&self) -> String {

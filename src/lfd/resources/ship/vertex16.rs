@@ -26,10 +26,6 @@ impl Vertex16 {
 
         Ok(Vertex16 { x, y, z })
     }
-
-    pub fn obj_print(&self) {
-        println!("v {:?} {:?} {:?}", self.x, self.y, self.z);
-    }
 }
 
 impl Debug for Vertex16 {

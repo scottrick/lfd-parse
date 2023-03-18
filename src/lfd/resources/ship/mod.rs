@@ -2,10 +2,10 @@ pub mod lod_header;
 pub mod lod_mesh;
 pub mod mesh_settings;
 pub mod mesh_type;
-pub mod mesh_vertices;
 pub mod shading_set;
 pub mod ship_component;
 pub mod vertex16;
+pub mod vertex_array;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
@@ -16,8 +16,10 @@ use crate::lfd::traits::lfd_resource::LfdResource;
 
 use core::fmt::Debug;
 use core::fmt::Formatter;
+use std::fs;
 use std::fs::File;
 use std::io::BufReader;
+use std::io::BufWriter;
 use std::io::Read;
 use std::io::Seek;
 use std::io::SeekFrom;
@@ -163,5 +165,21 @@ impl LfdResource for Ship {
 impl Debug for Ship {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.lfd_get_print_str())
+    }
+}
+
+impl Ship {
+    pub fn write_to_obj_file(&self) -> Result<(), String> {
+        let _create_dir_result = fs::create_dir("obj/");
+        let file = File::create(format!("obj/{}.obj", self.header.header_name.clone()))
+            .map_err(|e| format!("Error creating obj file for writing: {e}"))?;
+
+        let mut writer = BufWriter::new(file);
+
+        for ship_component in self.ship_components.iter() {
+            ship_component.obj_to_writer(&mut writer)?;
+        }
+
+        Ok(())
     }
 }

@@ -27,8 +27,10 @@ impl LfdHeader {
             .read_exact(&mut name)
             .map_err(|e| format!("Error reading header name: {e}"))?;
 
-        let header_name =
-            String::from_utf8(name).map_err(|e| format!("Error reading header name: {e}"))?;
+        let header_name = String::from_utf8(name)
+            .map_err(|e| format!("Error reading header name: {e}"))?
+            .trim_matches(char::from(0))
+            .to_string();
 
         let size = reader
             .read_i32::<LittleEndian>()
