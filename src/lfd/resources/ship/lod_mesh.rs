@@ -8,6 +8,7 @@ use byteorder::ReadBytesExt;
 
 use crate::lfd::traits::lfd_print::LfdPrint;
 
+use super::mesh_vertices::MeshVertices;
 use super::vertex16::Vertex16;
 
 // LodMesh
@@ -38,6 +39,7 @@ pub struct LodMesh {
     color_indices: Vec<u8>,
     min_bound: Vertex16,
     max_bound: Vertex16,
+    mesh_vertices: MeshVertices,
 }
 
 impl LodMesh {
@@ -74,6 +76,9 @@ impl LodMesh {
         let max_bound =
             Vertex16::from_reader(reader).map_err(|e| format!("Error reading Vertex16: {e}"))?;
 
+        let mesh_vertices = MeshVertices::from_reader(reader, num_vertices)
+            .map_err(|e| format!("Error reading MeshVertices: {e}"))?;
+
         Ok(Self {
             signature,
             unknown_1,
@@ -83,6 +88,7 @@ impl LodMesh {
             color_indices,
             min_bound,
             max_bound,
+            mesh_vertices,
         })
     }
 }
@@ -99,8 +105,18 @@ impl Debug for LodMesh {
 
 impl LfdPrint for LodMesh {
     fn lfd_print(&self, indent: usize) {
-        let spaces = " ".repeat(indent);
-        println!("{spaces}{}", self.lfd_get_print_str());
+        // let spaces = " ".repeat(indent);
+        // println!("{spaces}{}", self.lfd_get_print_str());
+
+        // println!("{spaces} num_vertices: {:?}", self.num_vertices);
+        // println!("{spaces} num_shapes: {:?}", self.num_shapes);
+        // println!("{spaces} color_indices: {:?}", self.color_indices);
+        // println!("{spaces} min_bound: {:?}", self.min_bound);
+        // println!("{spaces} max_bound: {:?}", self.max_bound);
+        // println!("{spaces} {:?}", self.mesh_vertices);
+
+        // obj print
+        self.mesh_vertices.obj_print();
     }
 
     fn lfd_get_print_str(&self) -> String {

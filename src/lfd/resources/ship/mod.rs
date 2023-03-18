@@ -2,6 +2,7 @@ pub mod lod_header;
 pub mod lod_mesh;
 pub mod mesh_settings;
 pub mod mesh_type;
+pub mod mesh_vertices;
 pub mod shading_set;
 pub mod ship_component;
 pub mod vertex16;
@@ -143,6 +144,11 @@ impl LfdResource for Ship {
 
         let spaces = " ".repeat(indent);
         println!("{spaces}{}", self.lfd_get_print_str());
+
+        println!("  {spaces}ShadingSets[{}]", self.shading_sets.len());
+        for shading_set in self.shading_sets.iter() {
+            println!("    {spaces}{shading_set:?}");
+        }
 
         for i in 0..settings_size {
             let setting = &self.mesh_settings[i];

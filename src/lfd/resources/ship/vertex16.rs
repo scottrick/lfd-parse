@@ -7,9 +7,9 @@ use core::fmt::Debug;
 use std::{fmt::Formatter, fs::File, io::BufReader};
 
 pub struct Vertex16 {
-    x: i16,
-    y: i16,
-    z: i16,
+    pub x: i16,
+    pub y: i16,
+    pub z: i16,
 }
 
 impl Vertex16 {
@@ -26,11 +26,18 @@ impl Vertex16 {
 
         Ok(Vertex16 { x, y, z })
     }
+
+    pub fn obj_print(&self) {
+        println!("v {:?} {:?} {:?}", self.x, self.y, self.z);
+    }
 }
 
 impl Debug for Vertex16 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let debug_string = format!("Vertex16 ({:?}, {:?}, {:?})", self.x, self.y, self.z,);
+        let debug_string = format!(
+            "Vertex16 ({:?}, {:?}, {:?}), (0x{:04X}, 0x{:04X}, 0x{:04X})",
+            self.x, self.y, self.z, self.x, self.y, self.z,
+        );
         f.write_str(&debug_string)
     }
 }
