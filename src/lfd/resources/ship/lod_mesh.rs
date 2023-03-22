@@ -8,6 +8,8 @@ use byteorder::ReadBytesExt;
 
 use crate::lfd::traits::lfd_print::LfdPrint;
 
+use super::shape::Shape;
+use super::shape_settings::ShapeSettings;
 use super::vertex16::Vertex16;
 use super::vertex_array::VertexArray;
 
@@ -40,6 +42,9 @@ pub struct LodMesh {
     min_bound: Vertex16,
     max_bound: Vertex16,
     mesh_vertices: VertexArray,
+    vertex_normals: VertexArray,
+    shape_settings: ShapeSettings,
+    shapes: Vec<Shape>,
 }
 
 impl LodMesh {
@@ -68,7 +73,7 @@ impl LodMesh {
 
         reader
             .read_exact(&mut color_indices)
-            .map_err(|e| format!("Error reading Unknown buffer: {e}"))?;
+            .map_err(|e| format!("Error reading color_indices: {e}"))?;
 
         let min_bound =
             Vertex16::from_reader(reader).map_err(|e| format!("Error reading Vertex16: {e}"))?;
@@ -76,8 +81,23 @@ impl LodMesh {
         let max_bound =
             Vertex16::from_reader(reader).map_err(|e| format!("Error reading Vertex16: {e}"))?;
 
-        let mesh_vertices = VertexArray::from_reader(reader, num_vertices)
+        let mesh_vertices = VertexArray::from_reader(reader, num_vertices, true)
             .map_err(|e| format!("Error reading MeshVertices: {e}"))?;
+
+        let vertex_normals = VertexArray::from_reader(reader, num_vertices, false)
+            .map_err(|e| format!("Error reading VertexNormals: {e}"))?;
+
+        let shape_settings = ShapeSettings::from_reader(reader)
+            .map_err(|e| format!("Error reading ShapeSettings: {e}"))?;
+
+        let mut shapes: Vec<Shape> = Vec::new();
+
+        for _ in 0..num_shapes {
+            let new_shape =
+                Shape::from_reader(reader).map_err(|e| format!("Error reading Shape: {e}"))?;
+
+            shapes.push(new_shape);
+        }
 
         Ok(Self {
             _signature,
@@ -89,6 +109,9 @@ impl LodMesh {
             min_bound,
             max_bound,
             mesh_vertices,
+            vertex_normals,
+            shape_settings,
+            shapes,
         })
     }
 
@@ -104,10 +127,6 @@ impl LodMesh {
 
 impl Debug for LodMesh {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        // let debug_string = format!(
-        //     "LodMesh signature: {:?} u1: {:?} num_vertices: {:?} u2: {:?} num_shapes: {:?} color_indices: {:?}, min_bound: {:?}, max_bound: {:?}",
-        //     self.signature, self.unknown_1, self.num_vertices, self.unknown_2, self.num_shapes, self.color_indices, self.min_bound, self.max_bound
-        // );
         let debug_string = "LodMesh";
         f.write_str(debug_string)
     }
@@ -122,7 +141,18 @@ impl LfdPrint for LodMesh {
         println!("{spaces} color_indices: {:?}", self.color_indices);
         println!("{spaces} min_bound: {:?}", self.min_bound);
         println!("{spaces} max_bound: {:?}", self.max_bound);
-        println!("{spaces} {:?}", self.mesh_vertices);
+        println!(
+            "{spaces} MeshVertices[{:?}]",
+            self.mesh_vertices.vertices.len()
+        );
+        println!(
+            "{spaces} VertexNormals[{:?}]",
+            self.vertex_normals.vertices.len()
+        );
+        println!("{spaces} ShapeSettings[{:?}]", self.shape_settings);
+        for shape in self.shapes.iter() {
+            println!("{spaces}  {:?}", shape);
+        }
     }
 
     fn lfd_get_print_str(&self) -> String {

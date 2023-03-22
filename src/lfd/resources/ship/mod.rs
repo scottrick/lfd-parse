@@ -3,6 +3,8 @@ pub mod lod_mesh;
 pub mod mesh_settings;
 pub mod mesh_type;
 pub mod shading_set;
+pub mod shape;
+pub mod shape_settings;
 pub mod ship_component;
 pub mod vertex16;
 pub mod vertex_array;
