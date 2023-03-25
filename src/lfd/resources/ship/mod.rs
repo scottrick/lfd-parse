@@ -100,14 +100,6 @@ impl LfdResource for Ship {
             ship_components.push(ship_component);
         }
 
-        // let mut num_ship_lod_headers: usize = 0;
-        // for _ in 0..num_components {
-        //     let ship_component = ShipComponent::from_reader(reader)
-        //         .map_err(|e| format!("Error reading ship component: {e}"))?;
-        //     num_ship_lod_headers += ship_component.lod_headers.len();
-        //     ship_components.push(ship_component);
-        // }
-
         // Seek to the end of this ship component.
         reader
             .seek(SeekFrom::Start(end_pos))
@@ -177,10 +169,16 @@ impl Ship {
             .map_err(|e| format!("Error creating obj file for writing: {e}"))?;
 
         let mut writer = BufWriter::new(file);
+        let mut next_vertex_index: usize = 0;
 
         for ship_component in self.ship_components.iter() {
-            ship_component.obj_to_writer(&mut writer)?;
+            ship_component.obj_to_writer(&mut writer, &mut next_vertex_index)?;
         }
+
+        println!(
+            "FINISHED WRITING, number of vertices: {}",
+            next_vertex_index
+        );
 
         Ok(())
     }

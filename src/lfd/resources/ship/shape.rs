@@ -21,10 +21,12 @@ impl Shape {
             .read_u8()
             .map_err(|e| format!("Error reading shape_type: {e}"))?;
 
+        // top nibble is the type
         let shape_type = combo_byte >> 4;
+        // bottom nibble is the number of vertices
         let num_vertices = combo_byte & 0b00001111;
 
-        let mut shape_data: Vec<u8> = vec![0; num_vertices as usize];
+        let mut shape_data: Vec<u8> = vec![0; 3 + (num_vertices * 2) as usize];
 
         reader
             .read_exact(&mut shape_data)
@@ -36,6 +38,39 @@ impl Shape {
             num_vertices,
             shape_data,
         })
+    }
+
+    pub fn obj_to_writer(
+        &self,
+        writer: &mut dyn std::io::Write,
+        vertex_offset: usize,
+    ) -> Result<(), String> {
+        if self.num_vertices == 2 {
+            // single line
+            writeln!(
+                writer,
+                "l {:?} {:?}",
+                self.shape_data[2] as usize + vertex_offset,
+                self.shape_data[3] as usize + vertex_offset
+            )
+            .map_err(|e| format!("Error writing shape to obj writer: {e}"))?;
+        } else {
+            // Data[v * 2] and Data[(v + 1) * 2]
+            for i in 0..self.num_vertices as usize {
+                let i1 = self.shape_data[i * 2] as usize;
+                let i2 = self.shape_data[(i + 1) * 2] as usize;
+
+                writeln!(
+                    writer,
+                    "l {:?} {:?}",
+                    i1 + vertex_offset + 1,
+                    i2 + vertex_offset + 1
+                )
+                .map_err(|e| format!("Error writing shape to obj writer: {e}"))?;
+            }
+        }
+
+        Ok(())
     }
 }
 

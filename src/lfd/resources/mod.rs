@@ -29,9 +29,14 @@ pub fn create_from_reader(reader: &mut BufReader<File>) -> Result<Box<dyn LfdRes
             Ok(Box::from(rmap))
         }
         LfdHeaderType::Ship(_) => {
-            let ship = Ship::from_reader(reader, header)?;
-            ship.write_to_obj_file()?;
-            Ok(Box::from(ship))
+            if header.header_name == "TIEFTR" || true {
+                let ship = Ship::from_reader(reader, header)?;
+                ship.write_to_obj_file()?;
+                Ok(Box::from(ship))
+            } else {
+                let unknown = Unknown::from_reader(reader, header)?;
+                Ok(Box::from(unknown))
+            }
         }
         _ => {
             let unknown = Unknown::from_reader(reader, header)?;

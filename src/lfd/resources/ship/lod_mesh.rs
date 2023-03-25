@@ -3,6 +3,7 @@ use core::fmt::Formatter;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::Read;
+use std::io::Seek;
 
 use byteorder::ReadBytesExt;
 
@@ -43,7 +44,7 @@ pub struct LodMesh {
     max_bound: Vertex16,
     mesh_vertices: VertexArray,
     vertex_normals: VertexArray,
-    shape_settings: ShapeSettings,
+    shape_settings: Vec<ShapeSettings>,
     shapes: Vec<Shape>,
 }
 
@@ -87,15 +88,31 @@ impl LodMesh {
         let vertex_normals = VertexArray::from_reader(reader, num_vertices, false)
             .map_err(|e| format!("Error reading VertexNormals: {e}"))?;
 
-        let shape_settings = ShapeSettings::from_reader(reader)
-            .map_err(|e| format!("Error reading ShapeSettings: {e}"))?;
-
+        let mut shape_settings: Vec<ShapeSettings> = Vec::new();
         let mut shapes: Vec<Shape> = Vec::new();
 
         for _ in 0..num_shapes {
+            let shape_settings_cursor_pos = reader
+                .stream_position()
+                .map_err(|e| format!("Error reading stream position: {e}"))?;
+
+            let shape_setting = ShapeSettings::from_reader(reader)
+                .map_err(|e| format!("Error reading ShapeSettings: {e}"))?;
+
+            reader
+                .seek(std::io::SeekFrom::Start(
+                    shape_settings_cursor_pos + shape_setting.offset as u64,
+                ))
+                .map_err(|e| format!("Unable to seek to Shape: {e}"))?;
+
             let new_shape =
                 Shape::from_reader(reader).map_err(|e| format!("Error reading Shape: {e}"))?;
 
+            reader
+                .seek(std::io::SeekFrom::Start(shape_settings_cursor_pos + 8))
+                .map_err(|e| format!("Unable to seek to next ShapeSetting: {e}"))?;
+
+            shape_settings.push(shape_setting);
             shapes.push(new_shape);
         }
 
@@ -115,11 +132,23 @@ impl LodMesh {
         })
     }
 
-    pub fn obj_to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+    pub fn obj_to_writer(
+        &self,
+        writer: &mut dyn std::io::Write,
+        next_vertex_index: &mut usize,
+    ) -> Result<(), String> {
         for v in self.mesh_vertices.vertices.iter() {
             writeln!(writer, "v {:?} {:?} {:?}", v.x, v.y, v.z)
                 .map_err(|e| format!("Error writing mesh vertices to obj writer: {e}"))?;
         }
+
+        for shape in self.shapes.iter() {
+            shape
+                .obj_to_writer(writer, *next_vertex_index)
+                .map_err(|e| format!("Error writing shapes to obj writer: {e}"))?;
+        }
+
+        *next_vertex_index += self.mesh_vertices.vertices.len();
 
         Ok(())
     }
@@ -149,8 +178,11 @@ impl LfdPrint for LodMesh {
             "{spaces} VertexNormals[{:?}]",
             self.vertex_normals.vertices.len()
         );
-        println!("{spaces} ShapeSettings[{:?}]", self.shape_settings);
-        for shape in self.shapes.iter() {
+
+        for i in 0..self.num_shapes {
+            let shape_setting = &self.shape_settings[i as usize];
+            println!("{spaces} ShapeSettings[{:?}]", shape_setting);
+            let shape = &self.shapes[i as usize];
             println!("{spaces}  {:?}", shape);
         }
     }

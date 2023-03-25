@@ -54,9 +54,13 @@ impl ShipComponent {
         })
     }
 
-    pub fn obj_to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+    pub fn obj_to_writer(
+        &self,
+        writer: &mut dyn std::io::Write,
+        next_vertex_index: &mut usize,
+    ) -> Result<(), String> {
         for mesh in self.lod_meshes.iter() {
-            mesh.obj_to_writer(writer)?;
+            mesh.obj_to_writer(writer, next_vertex_index)?;
         }
 
         Ok(())
