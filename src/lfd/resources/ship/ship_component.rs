@@ -59,9 +59,28 @@ impl ShipComponent {
         writer: &mut dyn std::io::Write,
         next_vertex_index: &mut usize,
     ) -> Result<(), String> {
-        for mesh in self.lod_meshes.iter() {
-            mesh.obj_to_writer(writer, next_vertex_index)?;
+        // LodHeader distance: 1308 offset: 18
+        // LodHeader distance: 6540 offset: 797
+        // LodHeader distance: 2147483647 offset: 1180
+
+        let distance: i32 = 6540;
+        let mut index: usize = 0;
+
+        for i in 0..self.lod_headers.len() {
+            let lod_header = &self.lod_headers[i];
+
+            if distance < lod_header.distance {
+                index = i;
+                break;
+            }
         }
+
+        let lod_mesh = &self.lod_meshes[index];
+        lod_mesh.obj_to_writer(writer, next_vertex_index)?;
+
+        // for mesh in self.lod_meshes.iter() {
+        //     mesh.obj_to_writer(writer, next_vertex_index)?;
+        // }
 
         Ok(())
     }
@@ -87,8 +106,11 @@ impl LfdPrint for ShipComponent {
             let header = &self.lod_headers[i];
             let mesh = &self.lod_meshes[i];
 
-            header.lfd_print(indent + 2);
-            mesh.lfd_print(indent + 2);
+            //only print last LoD for now
+            if i == headers_size - 1 {
+                header.lfd_print(indent + 2);
+                mesh.lfd_print(indent + 2);
+            }
         }
     }
 

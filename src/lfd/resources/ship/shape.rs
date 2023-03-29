@@ -9,22 +9,25 @@ use byteorder::ReadBytesExt;
 use crate::lfd::traits::lfd_print::LfdPrint;
 
 pub struct Shape {
-    pub combo_byte: u8,
-    pub shape_type: u8,
+    pub first_byte: u8,
+    pub shade_flag: bool,
+    pub two_sided_flag: bool,
     pub num_vertices: u8,
     pub shape_data: Vec<u8>,
 }
 
 impl Shape {
     pub fn from_reader(reader: &mut BufReader<File>) -> Result<Self, String> {
-        let combo_byte: u8 = reader
+        let first_byte: u8 = reader
             .read_u8()
             .map_err(|e| format!("Error reading shape_type: {e}"))?;
 
-        // top nibble is the type
-        let shape_type = combo_byte >> 4;
+        // top nibble contains two flags
+        let shade_flag = first_byte & 0x40 != 0;
+        let two_sided_flag = first_byte & 0x80 != 0;
+
         // bottom nibble is the number of vertices
-        let num_vertices = combo_byte & 0b00001111;
+        let num_vertices = first_byte & 0x0f;
 
         let mut shape_data: Vec<u8> = vec![0; 3 + (num_vertices * 2) as usize];
 
@@ -33,8 +36,9 @@ impl Shape {
             .map_err(|e| format!("Error reading shape_data: {e}"))?;
 
         Ok(Shape {
-            combo_byte,
-            shape_type,
+            first_byte,
+            shade_flag,
+            two_sided_flag,
             num_vertices,
             shape_data,
         })
@@ -77,8 +81,8 @@ impl Shape {
 impl Debug for Shape {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let debug_string = format!(
-            "Shape combo: {:08b}, shape_type: {:?}, num_vertices: {:?}, data: {:?}",
-            self.combo_byte, self.shape_type, self.num_vertices, self.shape_data,
+            "Shape first_byte: {:08b}, shade_flag: {}, two_sided_flag: {}, num_vertices: {}, data: {:?}",
+            self.first_byte, self.shade_flag, self.two_sided_flag, self.num_vertices, self.shape_data,
         );
 
         f.write_str(&debug_string)

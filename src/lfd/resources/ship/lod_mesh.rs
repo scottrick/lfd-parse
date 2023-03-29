@@ -164,6 +164,7 @@ impl Debug for LodMesh {
 impl LfdPrint for LodMesh {
     fn lfd_print(&self, indent: usize) {
         let spaces = " ".repeat(indent);
+        let spaces2 = " ".repeat(indent + 2);
         println!("{spaces}{}", self.lfd_get_print_str());
         println!("{spaces} num_vertices: {:?}", self.num_vertices);
         println!("{spaces} num_shapes: {:?}", self.num_shapes);
@@ -174,6 +175,9 @@ impl LfdPrint for LodMesh {
             "{spaces} MeshVertices[{:?}]",
             self.mesh_vertices.vertices.len()
         );
+        for vertex in self.mesh_vertices.vertices.iter() {
+            println!("{spaces2} {vertex:?}");
+        }
         println!(
             "{spaces} VertexNormals[{:?}]",
             self.vertex_normals.vertices.len()
