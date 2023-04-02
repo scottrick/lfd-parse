@@ -54,8 +54,10 @@ impl Shape {
             writeln!(
                 writer,
                 "l {:?} {:?}",
-                self.shape_data[2] as usize + vertex_offset,
-                self.shape_data[3] as usize + vertex_offset
+                //+1 because OBJ format indices start at 1
+                self.shape_data[2] as usize + vertex_offset + 1,
+                //+1 because OBJ format indices start at 1
+                self.shape_data[3] as usize + vertex_offset + 1
             )
             .map_err(|e| format!("Error writing shape to obj writer: {e}"))?;
         } else {
@@ -67,7 +69,9 @@ impl Shape {
                 writeln!(
                     writer,
                     "l {:?} {:?}",
+                    //+1 because OBJ format indices start at 1
                     i1 + vertex_offset + 1,
+                    //+1 because OBJ format indices start at 1
                     i2 + vertex_offset + 1
                 )
                 .map_err(|e| format!("Error writing shape to obj writer: {e}"))?;

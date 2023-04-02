@@ -63,7 +63,7 @@ impl ShipComponent {
         // LodHeader distance: 6540 offset: 797
         // LodHeader distance: 2147483647 offset: 1180
 
-        let distance: i32 = 6540;
+        let distance: i32 = 0;
         let mut index: usize = 0;
 
         for i in 0..self.lod_headers.len() {
