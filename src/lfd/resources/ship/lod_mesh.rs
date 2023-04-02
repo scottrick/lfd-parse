@@ -142,6 +142,11 @@ impl LodMesh {
                 .map_err(|e| format!("Error writing mesh vertices to obj writer: {e}"))?;
         }
 
+        // for v in self.vertex_normals.vertices.iter() {
+        //     writeln!(writer, "vn {:?} {:?} {:?}", v.x, v.y, v.z)
+        //         .map_err(|e| format!("Error writing mesh vertex normals to obj writer: {e}"))?;
+        // }
+
         for shape in self.shapes.iter() {
             shape
                 .obj_to_writer(writer, *next_vertex_index)

@@ -61,20 +61,39 @@ impl Shape {
             )
             .map_err(|e| format!("Error writing shape to obj writer: {e}"))?;
         } else {
-            // Data[v * 2] and Data[(v + 1) * 2]
-            for i in 0..self.num_vertices as usize {
-                let i1 = self.shape_data[i * 2] as usize;
-                let i2 = self.shape_data[(i + 1) * 2] as usize;
+            // Triangle Fan
+            for i in 0..(self.num_vertices - 2) {
+                let i1 = self.shape_data[0] as usize;
+                let i2 = self.shape_data[(i as usize + 1) * 2] as usize;
+                let i3 = self.shape_data[(i as usize + 2) * 2] as usize;
 
                 writeln!(
                     writer,
-                    "l {:?} {:?}",
+                    "f {:?} {:?} {:?}",
                     //+1 because OBJ format indices start at 1
                     i1 + vertex_offset + 1,
                     //+1 because OBJ format indices start at 1
-                    i2 + vertex_offset + 1
+                    i2 + vertex_offset + 1,
+                    //+1 because OBJ format indices start at 1
+                    i3 + vertex_offset + 1,
                 )
                 .map_err(|e| format!("Error writing shape to obj writer: {e}"))?;
+
+                //vertex normals built in
+                //writeln!(
+                //    writer,
+                //    "f {:?}//{:?} {:?}//{:?} {:?}//{:?}",
+                //    //+1 because OBJ format indices start at 1
+                //    i1 + vertex_offset + 1,
+                //    i1 + vertex_offset + 1,
+                //    //+1 because OBJ format indices start at 1
+                //    i2 + vertex_offset + 1,
+                //    i2 + vertex_offset + 1,
+                //    //+1 because OBJ format indices start at 1
+                //    i3 + vertex_offset + 1,
+                //    i3 + vertex_offset + 1,
+                //)
+                //.map_err(|e| format!("Error writing shape to obj writer: {e}"))?;
             }
         }
 
