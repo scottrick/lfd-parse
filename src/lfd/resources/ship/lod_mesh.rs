@@ -33,6 +33,11 @@ use super::vertex_array::VertexArray;
 ///              Unknown2[NumUnk2]
 ///              Unknown3[NumUnk2]
 /// }
+
+// ShapeSetting should actually be polygon normals?
+// https://github.com/rob-pilkington/XWLoader/blob/master/Assets/Scripts/LfdReader/LodRecord.cs
+//
+//
 pub struct LodMesh {
     _signature: u8,
     _unknown_1: u8,
@@ -169,7 +174,7 @@ impl Debug for LodMesh {
 impl LfdPrint for LodMesh {
     fn lfd_print(&self, indent: usize) {
         let spaces = " ".repeat(indent);
-        let spaces2 = " ".repeat(indent + 2);
+        let _spaces2 = " ".repeat(indent + 2);
         println!("{spaces}{}", self.lfd_get_print_str());
         println!("{spaces} num_vertices: {:?}", self.num_vertices);
         println!("{spaces} num_shapes: {:?}", self.num_shapes);
@@ -180,9 +185,9 @@ impl LfdPrint for LodMesh {
             "{spaces} MeshVertices[{:?}]",
             self.mesh_vertices.vertices.len()
         );
-        for vertex in self.mesh_vertices.vertices.iter() {
-            println!("{spaces2} {vertex:?}");
-        }
+        // for vertex in self.mesh_vertices.vertices.iter() {
+        //     println!("{_spaces2} {vertex:?}");
+        // }
         println!(
             "{spaces} VertexNormals[{:?}]",
             self.vertex_normals.vertices.len()

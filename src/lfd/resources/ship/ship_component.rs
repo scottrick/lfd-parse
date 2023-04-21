@@ -107,10 +107,10 @@ impl LfdPrint for ShipComponent {
             let mesh = &self.lod_meshes[i];
 
             //only print last LoD for now
-            if i == headers_size - 1 {
-                header.lfd_print(indent + 2);
-                mesh.lfd_print(indent + 2);
-            }
+            // if i == headers_size - 1 {
+            header.lfd_print(indent + 2);
+            // mesh.lfd_print(indent + 2);
+            // }
         }
     }
 

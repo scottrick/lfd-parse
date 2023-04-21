@@ -15,8 +15,10 @@ fn main() -> Result<(), String> {
         let entry = entry.map_err(|e| format!("Invalid entry: {e}"))?;
 
         let is_species = entry.path().starts_with("data/SPECIES.LFD");
-        // || entry.path().starts_with("data/SPECIES2.LFD")
-        // || entry.path().starts_with("data/SPECIES3.LFD");
+        // || {
+        // entry.path().starts_with("data/SPECIES2.LFD")
+        // || entry.path().starts_with("data/SPECIES3.LFD")
+        // };
 
         if entry.path().is_file() && is_species {
             let lfd_file =
