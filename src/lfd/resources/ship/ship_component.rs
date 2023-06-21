@@ -104,7 +104,7 @@ impl LfdPrint for ShipComponent {
 
         for i in 0..headers_size {
             let header = &self.lod_headers[i];
-            let mesh = &self.lod_meshes[i];
+            let _mesh = &self.lod_meshes[i];
 
             //only print last LoD for now
             // if i == headers_size - 1 {

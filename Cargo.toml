@@ -8,3 +8,10 @@ edition = "2021"
 [dependencies]
 byteorder = "1"
 
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "test_bench"
+harness = false
+
