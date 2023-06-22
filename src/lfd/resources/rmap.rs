@@ -1,4 +1,5 @@
 use crate::lfd::lfd_header::LfdHeader;
+use crate::lfd::lfd_type::LfdHeaderType;
 use crate::lfd::resources;
 use crate::lfd::traits::lfd_print::INDENT_SIZE;
 use crate::lfd::traits::lfd_resource::LfdResource;
@@ -69,7 +70,13 @@ impl LfdResource for Rmap {
         println!("{spaces}{}", self.lfd_get_print_str());
 
         for resource in &self.resources {
-            resource.lfd_print(indent + INDENT_SIZE);
+            match resource.get_lfd_header().header_type {
+                // hatfat only print PLTT
+                LfdHeaderType::Pltt(_) => {
+                    resource.lfd_print(indent + INDENT_SIZE);
+                }
+                _ => {}
+            }
         }
     }
 }

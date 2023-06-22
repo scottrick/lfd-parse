@@ -1,4 +1,5 @@
 pub mod delt;
+pub mod pltt;
 pub mod rmap;
 pub mod ship;
 pub mod unknown;
@@ -12,6 +13,7 @@ use crate::lfd::resources::unknown::Unknown;
 use crate::lfd::traits::lfd_resource::LfdResource;
 
 use self::delt::Delt;
+use self::pltt::Pltt;
 use self::ship::Ship;
 
 use super::lfd_type::LfdHeaderType;
@@ -23,6 +25,10 @@ pub fn create_from_reader(reader: &mut BufReader<File>) -> Result<Box<dyn LfdRes
         LfdHeaderType::Delt(_) => {
             let delt = Delt::from_reader(reader, header)?;
             Ok(Box::from(delt))
+        }
+        LfdHeaderType::Pltt(_) => {
+            let pltt = Pltt::from_reader(reader, header)?;
+            Ok(Box::from(pltt))
         }
         LfdHeaderType::Rmap(_) => {
             let rmap = Rmap::from_reader(reader, header)?;
