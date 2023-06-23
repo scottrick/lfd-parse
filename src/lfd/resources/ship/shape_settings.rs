@@ -6,9 +6,7 @@ use std::{
 
 use byteorder::{LittleEndian, ReadBytesExt};
 
-use crate::lfd::traits::lfd_print::LfdPrint;
-
-use super::vertex16::Vertex16;
+use crate::lfd::{def::vertex16::Vertex16, traits::lfd_print::LfdPrint};
 
 pub struct ShapeSettings {
     pub normal: Vertex16,

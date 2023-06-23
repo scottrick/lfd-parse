@@ -7,12 +7,12 @@ use std::io::Seek;
 
 use byteorder::ReadBytesExt;
 
+use crate::lfd::def::vertex16::Vertex16;
+use crate::lfd::def::vertex_array::VertexArray;
 use crate::lfd::traits::lfd_print::LfdPrint;
 
 use super::shape::Shape;
 use super::shape_settings::ShapeSettings;
-use super::vertex16::Vertex16;
-use super::vertex_array::VertexArray;
 
 // LodMesh
 /// {

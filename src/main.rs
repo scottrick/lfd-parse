@@ -15,13 +15,18 @@ fn main() -> Result<(), String> {
         let entry = entry.map_err(|e| format!("Invalid entry: {e}"))?;
 
         let _is_species = entry.path().starts_with("data/SPECIES.LFD");
-        let _is_to = entry.path().starts_with("data/TOURDESK.LFD");
+
+        let is_tourdesk = entry.path().starts_with("data/TOURDESK.LFD");
+        let is_empire_lfd = entry.path().starts_with("data/EMPIRE.LFD");
+
+        let should_parse = is_tourdesk || is_empire_lfd;
+
         // || {
         // entry.path().starts_with("data/SPECIES2.LFD")
         // || entry.path().starts_with("data/SPECIES3.LFD")
         // };
 
-        if entry.path().is_file() {
+        if entry.path().is_file() && should_parse {
             let lfd_file =
                 LfdFile::read_from_file(entry.path().to_str().expect("Failed to get file name."))?;
 

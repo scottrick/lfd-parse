@@ -1,23 +1,21 @@
-use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
 
+use crate::lfd::def::color_array::ColorArray;
 use crate::lfd::resources::LfdHeader;
+use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_resource::LfdResource;
 
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use std::fs::File;
 use std::io::BufReader;
-use std::io::Read;
 
 pub struct Pltt {
     pub header: LfdHeader,
     pub start_index: u8,
     pub end_index: u8,
-    // pub left: u16,
-    // pub top: u16,
-    // pub right: u16,
-    // pub bottom: u16,
+    pub colors: ColorArray,
+    pub reserved: u8,
 }
 
 impl LfdResource for Pltt {
@@ -33,23 +31,20 @@ impl LfdResource for Pltt {
             .read_u8()
             .map_err(|e| format!("Error reading end_index: {e}"))?;
 
-        // let bottom: u16 = reader
-        //     .read_u16::<LittleEndian>()
-        //     .map_err(|e| format!("Error reading bottom: {e}"))?;
+        let num_colors = end_index - start_index + 1;
+        let colors = ColorArray::from_reader(reader, num_colors)
+            .map_err(|e| format!("Error reading color array: {e}"))?;
 
-        let size_left: usize =
-            usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
-        let size_left = size_left - 2;
-        let mut data: Vec<u8> = vec![0; size_left];
-
-        reader
-            .read_exact(&mut data)
-            .map_err(|e| format!("Error reading Unknown buffer: {e}"))?;
+        let reserved: u8 = reader
+            .read_u8()
+            .map_err(|e| format!("Error reading reserved byte: {e}"))?;
 
         Ok(Pltt {
             header,
             start_index,
             end_index,
+            colors,
+            reserved,
         })
     }
 
@@ -71,6 +66,12 @@ impl LfdResource for Pltt {
     fn lfd_print(&self, indent: usize) {
         let spaces = " ".repeat(indent);
         println!("{spaces}{}", self.lfd_get_print_str());
+
+        // Print out the colors in the palette.
+        for color in self.colors.colors.iter() {
+            println!("{}", color.get_6bit_color_str());
+            // color.lfd_print(indent + 2)
+        }
     }
 }
 

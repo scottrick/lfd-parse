@@ -6,8 +6,6 @@ pub mod shading_set;
 pub mod shape;
 pub mod shape_settings;
 pub mod ship_component;
-pub mod vertex16;
-pub mod vertex_array;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
