@@ -27,7 +27,11 @@ impl Color {
     }
 
     pub fn get_6bit_color_str(&self) -> String {
-        format!("{} {} {}", self.r / 4, self.g / 4, self.b / 4)
+        format!("{} {} {}\u{0d}", self.r / 4, self.g / 4, self.b / 4)
+    }
+
+    pub fn get_8bit_color_str(&self) -> String {
+        format!("{} {} {}", self.r, self.g, self.b)
     }
 }
 

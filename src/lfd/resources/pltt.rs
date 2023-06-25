@@ -2,7 +2,6 @@ use byteorder::ReadBytesExt;
 
 use crate::lfd::def::color_array::ColorArray;
 use crate::lfd::resources::LfdHeader;
-use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_resource::LfdResource;
 
 use core::fmt::Debug;
@@ -69,7 +68,7 @@ impl LfdResource for Pltt {
 
         // Print out the colors in the palette.
         for color in self.colors.colors.iter() {
-            println!("{}", color.get_6bit_color_str());
+            println!("{}", color.get_8bit_color_str());
             // color.lfd_print(indent + 2)
         }
     }

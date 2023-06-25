@@ -12,6 +12,7 @@ Cargo.lock
 # PALETTE files
 *.pal
 *.PAL
+*.gpl
 
 # don't check in tiecd data dir 
 data/

@@ -1,12 +1,52 @@
 pub mod lfd;
 
+use clap::error::ErrorKind;
 use std::fs;
 use std::string::String;
 
 use crate::lfd::lfd_file::LfdFile;
 use crate::lfd::traits::lfd_print::LfdPrint;
+use clap::CommandFactory;
+use clap::Parser;
+use clap::Subcommand;
 
-fn main() -> Result<(), String> {
+/// LFD Tool
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    Display {
+        #[arg(short, long)]
+        file: String,
+    },
+}
+
+fn main() {
+    let args = Args::parse();
+
+    match &args.command {
+        Commands::Display { file } => {
+            let lfd_file_result = LfdFile::read_from_file(file);
+
+            match lfd_file_result {
+                Ok(lfd_file) => {
+                    lfd_file.lfd_print(0);
+                }
+                Err(e) => {
+                    let mut cmd = Args::command();
+                    cmd.error(ErrorKind::ArgumentConflict, e).exit();
+                }
+            }
+        }
+    }
+}
+
+fn _old_main() -> Result<(), String> {
     println!("LFD Parse Tool");
 
     let _create_dir_result = fs::create_dir("out/");
