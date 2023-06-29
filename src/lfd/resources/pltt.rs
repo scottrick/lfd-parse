@@ -8,13 +8,14 @@ use core::fmt::Debug;
 use core::fmt::Formatter;
 use std::fs::File;
 use std::io::BufReader;
+use std::io::Read;
 
 pub struct Pltt {
     pub header: LfdHeader,
     pub start_index: u8,
     pub end_index: u8,
     pub colors: ColorArray,
-    pub reserved: u8,
+    pub reserved: Vec<u8>,
 }
 
 impl LfdResource for Pltt {
@@ -30,13 +31,22 @@ impl LfdResource for Pltt {
             .read_u8()
             .map_err(|e| format!("Error reading end_index: {e}"))?;
 
-        let num_colors = end_index - start_index + 1;
+        let num_colors = end_index as usize - start_index as usize + 1;
         let colors = ColorArray::from_reader(reader, num_colors)
             .map_err(|e| format!("Error reading color array: {e}"))?;
 
-        let reserved: u8 = reader
-            .read_u8()
-            .map_err(|e| format!("Error reading reserved byte: {e}"))?;
+        let total_size: usize =
+            usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
+        let size_read = 2 + num_colors * 3;
+
+        // A few of the palettes have more than 1 byte "reserved" at the end.
+        // Not sure why, but CITY.LFD does, for example.
+        let size_remaining = total_size - size_read;
+        let mut reserved: Vec<u8> = vec![0; size_remaining];
+
+        reader
+            .read_exact(&mut reserved)
+            .map_err(|e| format!("Error reading reserved buffer: {e}"))?;
 
         Ok(Pltt {
             header,
@@ -67,10 +77,10 @@ impl LfdResource for Pltt {
         println!("{spaces}{}", self.lfd_get_print_str());
 
         // Print out the colors in the palette.
-        for color in self.colors.colors.iter() {
-            println!("{}", color.get_8bit_color_str());
-            // color.lfd_print(indent + 2)
-        }
+        // for _color in self.colors.colors.iter() {
+        //     println!("{}", _color.get_6bit_color_str());
+        // color.lfd_print(indent + 2)
+        // }
     }
 }
 

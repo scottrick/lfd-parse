@@ -10,7 +10,7 @@ pub struct ColorArray {
 }
 
 impl ColorArray {
-    pub fn from_reader(reader: &mut BufReader<File>, num_colors: u8) -> Result<Self, String> {
+    pub fn from_reader(reader: &mut BufReader<File>, num_colors: usize) -> Result<Self, String> {
         let mut colors: Vec<Color> = Vec::new();
 
         for _ in 0..num_colors {

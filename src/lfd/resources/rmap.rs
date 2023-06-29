@@ -71,11 +71,12 @@ impl LfdResource for Rmap {
 
         for resource in &self.resources {
             match resource.get_lfd_header().header_type {
-                // hatfat only print PLTT
-                LfdHeaderType::Pltt(_) => {
+                LfdHeaderType::Rmap(_) => {
                     resource.lfd_print(indent + INDENT_SIZE);
                 }
-                _ => {}
+                _ => {
+                    resource.lfd_print(indent + INDENT_SIZE);
+                }
             }
         }
     }

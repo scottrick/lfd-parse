@@ -28,7 +28,7 @@ impl LfdHeader {
             .map_err(|e| format!("Error reading header name: {e}"))?;
 
         let header_name = String::from_utf8(name)
-            .map_err(|e| format!("Error reading header name: {e}"))?
+            .map_err(|e| format!("Error reading header name from_utf8: {e}"))?
             .trim_matches(char::from(0))
             .to_string();
 

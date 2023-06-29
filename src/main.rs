@@ -56,27 +56,35 @@ fn _old_main() -> Result<(), String> {
 
         let _is_species = entry.path().starts_with("data/SPECIES.LFD");
 
-        let is_tourdesk = entry.path().starts_with("data/TOURDESK.LFD");
+        let _is_tourdesk = entry.path().starts_with("data/TOURDESK.LFD");
         let is_empire_lfd = entry.path().starts_with("data/EMPIRE.LFD");
+        let is_scene4 = entry.path().starts_with("data/SCENE4.LFD");
+        let is_platform = entry.path().starts_with("data/PLATFORM.LFD");
 
-        let should_parse = is_tourdesk || is_empire_lfd;
+        let _should_parse = is_empire_lfd || is_scene4 || is_platform;
+
+        let _is_city = entry.path().starts_with("data/CITY.LFD");
 
         // || {
         // entry.path().starts_with("data/SPECIES2.LFD")
         // || entry.path().starts_with("data/SPECIES3.LFD")
         // };
 
-        if entry.path().is_file() && should_parse {
-            let lfd_file =
-                LfdFile::read_from_file(entry.path().to_str().expect("Failed to get file name."))?;
+        match entry.path().is_file() {
+            true => {
+                let lfd_file = LfdFile::read_from_file(
+                    entry.path().to_str().expect("Failed to get file name."),
+                )?;
 
-            lfd_file.lfd_print(0);
+                lfd_file.lfd_print(0);
 
-            // let output_file = LfdFile {
-            //     file_name: lfd_file.file_name.replace("data/", "out/"),
-            //     archive: lfd_file.archive,
-            // };
-            // output_file.write_to_file()?;
+                // let output_file = LfdFile {
+                //     file_name: lfd_file.file_name.replace("data/", "out/"),
+                //     archive: lfd_file.archive,
+                // };
+                // output_file.write_to_file()?;
+            }
+            false => (),
         }
     }
 
