@@ -5,6 +5,7 @@ use std::io::BufReader;
 use std::io::Read;
 use std::io::Seek;
 
+use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
 
 use crate::lfd::def::vertex16::Vertex16;
@@ -13,6 +14,7 @@ use crate::lfd::traits::lfd_print::LfdPrint;
 
 use super::shape::Shape;
 use super::shape_settings::ShapeSettings;
+use super::unknown1::Unknown1;
 
 // LodMesh
 /// {
@@ -45,13 +47,14 @@ pub struct LodMesh {
     num_vertices: u8,
     _unknown_2: u8,
     num_shapes: u8,
-    color_indices: Vec<u8>,
+    color_indices: Vec<u8>, // I *think* these are the color (as a palette index) for each shape.
     min_bound: Vertex16,
     max_bound: Vertex16,
     mesh_vertices: VertexArray,
     vertex_normals: VertexArray,
-    shape_settings: Vec<ShapeSettings>,
+    _shape_settings: Vec<ShapeSettings>,
     shapes: Vec<Shape>,
+    unknown: Vec<Unknown1>,
 }
 
 impl LodMesh {
@@ -94,7 +97,7 @@ impl LodMesh {
         let vertex_normals = VertexArray::from_reader(reader, num_vertices, false)
             .map_err(|e| format!("Error reading VertexNormals: {e}"))?;
 
-        let mut shape_settings: Vec<ShapeSettings> = Vec::new();
+        let mut _shape_settings: Vec<ShapeSettings> = Vec::new();
         let mut shapes: Vec<Shape> = Vec::new();
 
         for _ in 0..num_shapes {
@@ -118,9 +121,25 @@ impl LodMesh {
                 .seek(std::io::SeekFrom::Start(shape_settings_cursor_pos + 8))
                 .map_err(|e| format!("Unable to seek to next ShapeSetting: {e}"))?;
 
-            shape_settings.push(shape_setting);
+            _shape_settings.push(shape_setting);
             shapes.push(new_shape);
         }
+
+        let mut unknown: Vec<Unknown1> = Vec::new();
+        if _signature != 0x81 {
+            // 0x81 does not contain this information, for some reason.
+            for _ in 0..num_shapes {
+                let new_unknown = Unknown1::from_reader(reader)
+                    .map_err(|e| format!("Error reading Unknown1: {e}"))?;
+                unknown.push(new_unknown);
+            }
+        }
+
+        // this is probably not right yet
+        let _marked_polygon_count = reader
+            .read_i16::<LittleEndian>()
+            .map_err(|e| format!("Error reading marked_polygon_count: {e}"))?;
+        // println!("marked_polygon_count: 0x{:04X?}", _marked_polygon_count);
 
         Ok(Self {
             _signature,
@@ -133,8 +152,9 @@ impl LodMesh {
             max_bound,
             mesh_vertices,
             vertex_normals,
-            shape_settings,
+            _shape_settings,
             shapes,
+            unknown,
         })
     }
 
@@ -177,9 +197,16 @@ impl LfdPrint for LodMesh {
         let spaces = " ".repeat(indent);
         let _spaces2 = " ".repeat(indent + 2);
         println!("{spaces}{}", self.lfd_get_print_str());
+        println!("{spaces} signature: {:#04X}", self._signature);
+        println!("{spaces} unknown_1: {:#04X}", self._unknown_1);
+        println!("{spaces} unknown_2: {:#04X}", self._unknown_2);
         println!("{spaces} num_vertices: {:?}", self.num_vertices);
         println!("{spaces} num_shapes: {:?}", self.num_shapes);
-        println!("{spaces} color_indices: {:?}", self.color_indices);
+        println!(
+            "{spaces} color_indices[{}]: {:?}",
+            self.color_indices.len(),
+            self.color_indices
+        );
         println!("{spaces} min_bound: {:?}", self.min_bound);
         println!("{spaces} max_bound: {:?}", self.max_bound);
         println!(
@@ -194,12 +221,16 @@ impl LfdPrint for LodMesh {
             self.vertex_normals.vertices.len()
         );
 
-        for i in 0..self.num_shapes {
-            let shape_setting = &self.shape_settings[i as usize];
-            println!("{spaces} ShapeSettings[{:?}]", shape_setting);
-            let shape = &self.shapes[i as usize];
-            println!("{spaces}  {:?}", shape);
-        }
+        println!("{spaces} Shapes[{:?}]", self.num_shapes);
+
+        // for i in 0..self.num_shapes {
+        //     let shape_setting = &self._shape_settings[i as usize];
+        //     println!("{_spaces2} ShapeSettings[{:?}]", shape_setting);
+        //     let shape = &self.shapes[i as usize];
+        //     println!("{_spaces2}  {:?}", shape);
+        // }
+
+        println!("{spaces} Unknown[{}]", self.unknown.len());
     }
 
     fn lfd_get_print_str(&self) -> String {

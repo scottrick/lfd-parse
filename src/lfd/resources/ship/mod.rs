@@ -6,6 +6,7 @@ pub mod shading_set;
 pub mod shape;
 pub mod shape_settings;
 pub mod ship_component;
+pub mod unknown1;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;

@@ -26,7 +26,7 @@ enum Commands {
     },
 }
 
-fn main() {
+fn _main() {
     let args = Args::parse();
 
     match &args.command {
@@ -46,7 +46,7 @@ fn main() {
     }
 }
 
-fn _old_main() -> Result<(), String> {
+fn main() -> Result<(), String> {
     println!("LFD Parse Tool");
 
     let _create_dir_result = fs::create_dir("out/");
@@ -64,13 +64,15 @@ fn _old_main() -> Result<(), String> {
         let _should_parse = is_empire_lfd || is_scene4 || is_platform;
 
         let _is_city = entry.path().starts_with("data/CITY.LFD");
+        let _is_battle = entry.path().starts_with("data/BATTLE2.LFD");
+        let _is_test = entry.path().starts_with("data/LAUNCH.LFD");
 
         // || {
         // entry.path().starts_with("data/SPECIES2.LFD")
         // || entry.path().starts_with("data/SPECIES3.LFD")
         // };
 
-        match entry.path().is_file() {
+        match entry.path().is_file() && _is_species {
             true => {
                 let lfd_file = LfdFile::read_from_file(
                     entry.path().to_str().expect("Failed to get file name."),

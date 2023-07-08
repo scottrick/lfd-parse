@@ -108,6 +108,7 @@ impl LfdPrint for ShipComponent {
 
             //only print last LoD for now
             // if i == headers_size - 1 {
+            // hatfat!
             if i == 0 {
                 //first lod
                 header.lfd_print(indent + 2);

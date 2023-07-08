@@ -69,7 +69,18 @@ impl LfdResource for Rmap {
         println!("{spaces}{}", self.lfd_get_print_str());
 
         for resource in &self.resources {
-            resource.lfd_print(indent + INDENT_SIZE);
+            // add/remove resource types to enable/disable debug lfd print
+            match resource.get_lfd_header().header_type {
+                crate::lfd::lfd_type::LfdHeaderType::Ship(_) => {
+                    resource.lfd_print(indent + INDENT_SIZE);
+                }
+                crate::lfd::lfd_type::LfdHeaderType::Rmap(_) => {
+                    resource.lfd_print(indent + INDENT_SIZE);
+                }
+                _ => {
+                    // resource.lfd_print(indent + INDENT_SIZE);
+                }
+            }
         }
     }
 }

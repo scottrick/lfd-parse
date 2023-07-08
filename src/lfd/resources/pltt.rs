@@ -78,8 +78,8 @@ impl LfdResource for Pltt {
 
         // Print out the colors in the palette.
         // for _color in self.colors.colors.iter() {
-        //     println!("{}", _color.get_6bit_color_str());
-        // color.lfd_print(indent + 2)
+        //     println!("{}", _color.get_8bit_color_str());
+        //     // color.lfd_print(indent + 2)
         // }
     }
 }
