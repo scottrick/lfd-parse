@@ -34,6 +34,7 @@ use super::shape_settings::ShapeSettings;
 ///              Unknown3[NumUnk2]
 /// }
 
+// TODO:
 // ShapeSetting should actually be polygon normals?
 // https://github.com/rob-pilkington/XWLoader/blob/master/Assets/Scripts/LfdReader/LodRecord.cs
 //

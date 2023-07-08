@@ -108,9 +108,11 @@ impl LfdPrint for ShipComponent {
 
             //only print last LoD for now
             // if i == headers_size - 1 {
-            header.lfd_print(indent + 2);
-            // mesh.lfd_print(indent + 2);
-            // }
+            if i == 0 {
+                //first lod
+                header.lfd_print(indent + 2);
+                _mesh.lfd_print(indent + 2);
+            }
         }
     }
 
