@@ -42,7 +42,7 @@ use super::unknown1::Unknown1;
 //
 //
 pub struct LodMesh {
-    _signature: u8,
+    signature: u8,
     _unknown_1: u8,
     num_vertices: u8,
     _unknown_2: u8,
@@ -60,7 +60,7 @@ pub struct LodMesh {
 
 impl LodMesh {
     pub fn from_reader(reader: &mut BufReader<File>) -> Result<Self, String> {
-        let _signature: u8 = reader
+        let signature: u8 = reader
             .read_u8()
             .map_err(|e| format!("Error reading signature: {e}"))?;
 
@@ -101,7 +101,7 @@ impl LodMesh {
         let mut _shape_settings: Vec<ShapeSettings> = Vec::new();
         let mut shapes: Vec<Shape> = Vec::new();
 
-        for _ in 0..num_shapes {
+        for i in 0..num_shapes {
             let shape_settings_cursor_pos = reader
                 .stream_position()
                 .map_err(|e| format!("Error reading stream position: {e}"))?;
@@ -118,16 +118,19 @@ impl LodMesh {
             let new_shape =
                 Shape::from_reader(reader).map_err(|e| format!("Error reading Shape: {e}"))?;
 
-            reader
-                .seek(std::io::SeekFrom::Start(shape_settings_cursor_pos + 8))
-                .map_err(|e| format!("Unable to seek to next ShapeSetting: {e}"))?;
+            if i < num_shapes - 1 {
+                // Still more Shapes to read, so reset back to next ShapeSetting.
+                reader
+                    .seek(std::io::SeekFrom::Start(shape_settings_cursor_pos + 8))
+                    .map_err(|e| format!("Unable to seek to next ShapeSetting: {e}"))?;
+            }
 
             _shape_settings.push(shape_setting);
             shapes.push(new_shape);
         }
 
         let mut unknown: Vec<Unknown1> = Vec::new();
-        if _signature != 0x81 {
+        if signature != 0x81 {
             // 0x81 does not contain this information, for some reason.
             for _ in 0..num_shapes {
                 let new_unknown = Unknown1::from_reader(reader)
@@ -136,14 +139,12 @@ impl LodMesh {
             }
         }
 
-        // this is probably not right yet
         let num_marked_shapes = reader
             .read_i16::<LittleEndian>()
             .map_err(|e| format!("Error reading marked_polygon_count: {e}"))?;
-        println!("marked_polygon_count: {:?}", num_marked_shapes);
 
         Ok(Self {
-            _signature,
+            signature,
             _unknown_1,
             num_vertices,
             _unknown_2,
@@ -199,7 +200,7 @@ impl LfdPrint for LodMesh {
         let spaces = " ".repeat(indent);
         let _spaces2 = " ".repeat(indent + 2);
         println!("{spaces}{}", self.lfd_get_print_str());
-        println!("{spaces} signature: {:#04X}", self._signature);
+        println!("{spaces} signature: {:#04X}", self.signature);
         println!("{spaces} unknown_1: {:#04X}", self._unknown_1);
         println!("{spaces} unknown_2: {:#04X}", self._unknown_2);
         println!("{spaces} num_vertices: {:?}", self.num_vertices);
@@ -215,9 +216,6 @@ impl LfdPrint for LodMesh {
             "{spaces} MeshVertices[{:?}]",
             self.mesh_vertices.vertices.len()
         );
-        // for vertex in self.mesh_vertices.vertices.iter() {
-        //     println!("{_spaces2} {vertex:?}");
-        // }
         println!(
             "{spaces} VertexNormals[{:?}]",
             self.vertex_normals.vertices.len()
@@ -233,7 +231,7 @@ impl LfdPrint for LodMesh {
         // }
 
         println!("{spaces} Unknown[{}]", self.unknown.len());
-        println!("{spaces} NumMarkedShaped: {:?}", self.num_marked_shapes);
+        println!("{spaces} num_marked_shapes: {}", self.num_marked_shapes);
     }
 
     fn lfd_get_print_str(&self) -> String {
