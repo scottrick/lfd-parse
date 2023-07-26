@@ -1,8 +1,11 @@
 pub mod lfd;
+pub mod util;
+pub mod vga;
 
 use clap::error::ErrorKind;
 use std::fs;
 use std::string::String;
+use vga::VgaPac;
 
 use crate::lfd::lfd_file::LfdFile;
 use crate::lfd::traits::lfd_print::LfdPrint;
@@ -24,9 +27,14 @@ enum Commands {
         #[arg(short, long)]
         file: String,
     },
+    VgaPacParse {
+        //todo: add ability to output to gpl or PAL file.
+        #[arg(short, long)]
+        file: String,
+    },
 }
 
-fn _main() {
+fn main() {
     let args = Args::parse();
 
     match &args.command {
@@ -43,10 +51,24 @@ fn _main() {
                 }
             }
         }
+        Commands::VgaPacParse { file } => {
+            let vga_pac_file_result = VgaPac::read_from_file(file);
+
+            match vga_pac_file_result {
+                Ok(vga_file) => {
+                    vga_file.debug_print();
+                }
+
+                Err(e) => {
+                    let mut cmd = Args::command();
+                    cmd.error(ErrorKind::InvalidValue, e).exit();
+                }
+            }
+        }
     }
 }
 
-fn main() -> Result<(), String> {
+fn _main() -> Result<(), String> {
     println!("LFD Parse Tool");
 
     let _create_dir_result = fs::create_dir("out/");

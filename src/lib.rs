@@ -1,4 +1,6 @@
 pub mod lfd;
+pub mod util;
+pub mod vga;
 
 use std::fs;
 

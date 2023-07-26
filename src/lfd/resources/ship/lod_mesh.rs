@@ -8,9 +8,9 @@ use std::io::Seek;
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
 
-use crate::lfd::def::vertex16::Vertex16;
-use crate::lfd::def::vertex_array::VertexArray;
 use crate::lfd::traits::lfd_print::LfdPrint;
+use crate::util::vertex16::Vertex16;
+use crate::util::vertex_array::VertexArray;
 
 use super::shape::Shape;
 use super::shape_settings::ShapeSettings;
@@ -47,7 +47,7 @@ pub struct LodMesh {
     num_vertices: u8,
     _unknown_2: u8,
     num_shapes: u8,
-    color_indices: Vec<u8>, // I *think* these are the color (as a palette index) for each shape.
+    color_indices: Vec<u8>, // These are the color palette indices for each shape, found in VGA.PAC.
     min_bound: Vertex16,
     max_bound: Vertex16,
     mesh_vertices: VertexArray,
@@ -55,6 +55,7 @@ pub struct LodMesh {
     _shape_settings: Vec<ShapeSettings>,
     shapes: Vec<Shape>,
     unknown: Vec<Unknown1>,
+    num_marked_shapes: i16,
 }
 
 impl LodMesh {
@@ -136,10 +137,10 @@ impl LodMesh {
         }
 
         // this is probably not right yet
-        let _marked_polygon_count = reader
+        let num_marked_shapes = reader
             .read_i16::<LittleEndian>()
             .map_err(|e| format!("Error reading marked_polygon_count: {e}"))?;
-        // println!("marked_polygon_count: 0x{:04X?}", _marked_polygon_count);
+        println!("marked_polygon_count: {:?}", num_marked_shapes);
 
         Ok(Self {
             _signature,
@@ -155,6 +156,7 @@ impl LodMesh {
             _shape_settings,
             shapes,
             unknown,
+            num_marked_shapes,
         })
     }
 
@@ -231,6 +233,7 @@ impl LfdPrint for LodMesh {
         // }
 
         println!("{spaces} Unknown[{}]", self.unknown.len());
+        println!("{spaces} NumMarkedShaped: {:?}", self.num_marked_shapes);
     }
 
     fn lfd_get_print_str(&self) -> String {

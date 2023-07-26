@@ -1,8 +1,8 @@
 use byteorder::ReadBytesExt;
 
-use crate::lfd::def::color_array::ColorArray;
 use crate::lfd::resources::LfdHeader;
 use crate::lfd::traits::lfd_resource::LfdResource;
+use crate::util::color_array::ColorArray;
 
 use core::fmt::Debug;
 use core::fmt::Formatter;
@@ -32,7 +32,7 @@ impl LfdResource for Pltt {
             .map_err(|e| format!("Error reading end_index: {e}"))?;
 
         let num_colors = end_index as usize - start_index as usize + 1;
-        let colors = ColorArray::from_reader(reader, num_colors)
+        let colors = ColorArray::from_reader(reader, num_colors, false)
             .map_err(|e| format!("Error reading color array: {e}"))?;
 
         let total_size: usize =

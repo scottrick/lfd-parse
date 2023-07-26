@@ -10,12 +10,16 @@ pub struct ColorArray {
 }
 
 impl ColorArray {
-    pub fn from_reader(reader: &mut BufReader<File>, num_colors: usize) -> Result<Self, String> {
+    pub fn from_reader(
+        reader: &mut BufReader<File>,
+        num_colors: usize,
+        is_six_bit: bool,
+    ) -> Result<Self, String> {
         let mut colors: Vec<Color> = Vec::new();
 
         for _ in 0..num_colors {
-            let new_color =
-                Color::from_reader(reader).map_err(|e| format!("Error reading color: {e}"))?;
+            let new_color = Color::from_reader(reader, is_six_bit)
+                .map_err(|e| format!("Error reading color: {e}"))?;
 
             colors.push(new_color);
         }

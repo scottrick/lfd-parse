@@ -12,16 +12,24 @@ pub struct Color {
 }
 
 impl Color {
-    pub fn from_reader(reader: &mut BufReader<File>) -> Result<Self, String> {
+    pub fn from_reader(reader: &mut BufReader<File>, is_six_bit: bool) -> Result<Self, String> {
+        let mult = match is_six_bit {
+            true => 4u8,
+            false => 1u8,
+        };
+
         let r: u8 = reader
             .read_u8()
-            .map_err(|e| format!("Error reading r: {e}"))?;
+            .map_err(|e| format!("Error reading r: {e}"))?
+            * mult;
         let g: u8 = reader
             .read_u8()
-            .map_err(|e| format!("Error reading g: {e}"))?;
+            .map_err(|e| format!("Error reading g: {e}"))?
+            * mult;
         let b: u8 = reader
             .read_u8()
-            .map_err(|e| format!("Error reading b: {e}"))?;
+            .map_err(|e| format!("Error reading b: {e}"))?
+            * mult;
 
         Ok(Color { r, g, b })
     }
