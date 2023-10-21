@@ -1,45 +1,47 @@
-use std::fmt::Debug;
-use std::fmt::Formatter;
-use std::fs::File;
-use std::io::BufReader;
-use std::string::String;
+pub mod vga_color;
+pub mod vga_pac;
+pub mod vga_palette;
 
-use crate::util::color_array::ColorArray;
+use std::io::Write;
 
-pub struct VgaPac {
-    pub file_name: String,
-    pub colors: ColorArray,
+use clap::ValueEnum;
+
+use self::vga_pac::VgaPac;
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub enum VgaPacParseMode {
+    PaletteGimp,
+    PaletteNeopaint,
+    CreateMaterials,
 }
 
-impl VgaPac {
-    pub fn read_from_file(file_name: &str) -> Result<Self, String> {
-        let file =
-            File::open(file_name).map_err(|e| format!("Unable to open file {file_name}: {e}"))?;
+pub fn parse_vga_pac_file(
+    file: &str,
+    _mode: &VgaPacParseMode,
+    _output_file: &Option<String>,
+) -> Result<(), String> {
+    let vga_pac =
+        VgaPac::read_from_file(file).map_err(|e| format!("Error reading VGA.PAC file: {e}"))?;
 
-        let mut reader = BufReader::new(file);
+    vga_pac.debug_print_gimp_palette();
 
-        let colors = ColorArray::from_reader(&mut reader, 192, true)
-            .map_err(|e| format!("Failed to read ColorArray: {e:?}"))?;
+    // let writer = match output_file {
+    //     Some(output_file) => {
+    //         let file = File::open(file).map_err(|e| format!("Unable to open file {file}: {e}"))?;
 
-        Ok(VgaPac {
-            file_name: file_name.to_string(),
-            colors,
-        })
-    }
+    //         // let mut reader = BufReader::new(file);
 
-    pub fn debug_print(&self) {
-        println!("{:?}", self);
-        println!("GIMP Palette");
-        println!("Name: VGA.PAC");
-        println!("#");
-        for color in self.colors.colors.iter() {
-            println!("{}", color.get_8bit_color_str());
-        }
-    }
+    //         BufWriter::new(file)
+    //     }
+    //     None => std::io::stdout(),
+    // };
+
+    Ok(())
 }
 
-impl Debug for VgaPac {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&format!("VgaPac colors: {:?}", self.colors))
-    }
+fn _work(writer: &mut dyn Write, _vga_pac: VgaPac) -> std::io::Result<()> {
+    // writer.wri
+    write!(writer, "asdasdf")?;
+
+    Ok(())
 }

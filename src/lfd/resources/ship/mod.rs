@@ -165,7 +165,7 @@ impl Ship {
     pub fn write_to_obj_file(&self) -> Result<(), String> {
         let _create_dir_result = fs::create_dir("obj/");
         let file = File::create(format!("obj/{}.obj", self.header.header_name.clone()))
-            .map_err(|e| format!("Error creating obj file for writing: {e}"))?;
+            .map_err(|e| format!("Error writing obj file: {e}"))?;
 
         let mut writer = BufWriter::new(file);
         let mut next_vertex_index: usize = 0;
@@ -175,8 +175,8 @@ impl Ship {
         }
 
         println!(
-            "FINISHED WRITING, number of vertices: {}",
-            next_vertex_index
+            "Finished writing {} vertices for {}.",
+            next_vertex_index, self.header.header_name,
         );
 
         Ok(())

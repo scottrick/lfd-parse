@@ -37,7 +37,7 @@ pub fn create_from_reader(reader: &mut BufReader<File>) -> Result<Box<dyn LfdRes
         LfdHeaderType::Ship(_) => {
             if header.header_name == "TIEINT" {
                 let ship = Ship::from_reader(reader, header)?;
-                // ship.write_to_obj_file()?;
+                ship.write_to_obj_file()?;
                 Ok(Box::from(ship))
             } else {
                 let unknown = Unknown::from_reader(reader, header)?;

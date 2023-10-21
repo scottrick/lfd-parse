@@ -166,6 +166,9 @@ impl LodMesh {
         writer: &mut dyn std::io::Write,
         next_vertex_index: &mut usize,
     ) -> Result<(), String> {
+        writeln!(writer, "mtllib tf.mtl")
+            .map_err(|e| format!("Error writing material header: {e}"))?;
+
         for v in self.mesh_vertices.vertices.iter() {
             writeln!(writer, "v {:?} {:?} {:?}", v.x, v.y, v.z)
                 .map_err(|e| format!("Error writing mesh vertices to obj writer: {e}"))?;
@@ -175,6 +178,9 @@ impl LodMesh {
         //     writeln!(writer, "vn {:?} {:?} {:?}", v.x, v.y, v.z)
         //         .map_err(|e| format!("Error writing mesh vertex normals to obj writer: {e}"))?;
         // }
+
+        writeln!(writer, "usemtl imperial_gray_low")
+            .map_err(|e| format!("Error writing material: {e}"))?;
 
         for shape in self.shapes.iter() {
             shape

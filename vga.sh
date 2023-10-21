@@ -1,1 +1,1 @@
-cargo build && ./target/debug/lfd vga-pac-parse --file data/VGA.PAC
+cargo build && ./target/debug/lfd vga-pac --file data/VGA.PAC create-materials

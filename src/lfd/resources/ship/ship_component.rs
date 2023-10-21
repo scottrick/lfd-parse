@@ -66,6 +66,7 @@ impl ShipComponent {
         let distance: i32 = 0;
         let mut index: usize = 0;
 
+        // Find the closest LOD, and write that one.
         for i in 0..self.lod_headers.len() {
             let lod_header = &self.lod_headers[i];
 
