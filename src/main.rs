@@ -1,7 +1,3 @@
-// pub mod lfd;
-// pub mod util;
-// pub mod vga;
-
 use clap::error::ErrorKind;
 use lfd::lfd::lfd_file::LfdFile;
 use lfd::lfd::traits::lfd_print::LfdPrint;
@@ -14,7 +10,6 @@ use clap::CommandFactory;
 use clap::Parser;
 use clap::Subcommand;
 
-/// LFD Tool
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -26,10 +21,9 @@ struct Args {
 enum Commands {
     Display {
         #[arg(short, long)]
-        file: String,
-        // #[arg(short, long)]
-        // resource_name: Option<String>, // only display the named resource
+        file: Option<String>,
     },
+    Dump {},
     VgaPac {
         #[arg(short, long)]
         file: String,
@@ -38,6 +32,13 @@ enum Commands {
         #[arg(short, long)]
         output: Option<String>,
     },
+    Extract {
+        #[arg(short, long)]
+        file: String,
+        #[arg(short, long)]
+        destination: String,
+    },
+    Combine {},
 }
 
 fn main() {
@@ -45,7 +46,34 @@ fn main() {
     let mut cmd = Args::command();
 
     match &args.command {
-        Commands::Display { file } => {
+        Commands::Display { file } => match file {
+            Some(file) => {
+                let lfd_file_result = LfdFile::read_from_file(file);
+
+                match lfd_file_result {
+                    Ok(lfd_file) => {
+                        lfd_file.lfd_print(0);
+                    }
+                    Err(e) => {
+                        cmd.error(ErrorKind::ArgumentConflict, e).exit();
+                    }
+                }
+            }
+            None => {
+                cmd.error(
+                    ErrorKind::ArgumentConflict,
+                    "Requires that a file be set or debug be enabled.",
+                )
+                .exit();
+            }
+        },
+        Commands::VgaPac { file, mode, output } => {
+            if let Err(e) = parse_vga_pac_file(file, mode, output) {
+                cmd.error(ErrorKind::InvalidValue, e).exit();
+            }
+        }
+        Commands::Extract { file, destination } => {
+            println!("Extracting file: {file}, destination: {destination}");
             let lfd_file_result = LfdFile::read_from_file(file);
 
             match lfd_file_result {
@@ -57,15 +85,17 @@ fn main() {
                 }
             }
         }
-        Commands::VgaPac { file, mode, output } => {
-            if let Err(e) = parse_vga_pac_file(file, mode, output) {
-                cmd.error(ErrorKind::InvalidValue, e).exit();
+
+        Commands::Combine {} => todo!(),
+        Commands::Dump {} => {
+            if let Err(e) = dump() {
+                cmd.error(ErrorKind::ArgumentConflict, e).exit();
             }
         }
     }
 }
 
-fn _main() -> Result<(), String> {
+fn dump() -> Result<(), String> {
     println!("LFD Parse Tool");
 
     let _create_dir_result = fs::create_dir("out/");
@@ -91,7 +121,7 @@ fn _main() -> Result<(), String> {
         // || entry.path().starts_with("data/SPECIES3.LFD")
         // };
 
-        match entry.path().is_file() && _is_species {
+        match entry.path().is_file() {
             true => {
                 let lfd_file = LfdFile::read_from_file(
                     entry.path().to_str().expect("Failed to get file name."),
