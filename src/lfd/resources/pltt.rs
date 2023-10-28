@@ -58,6 +58,7 @@ impl LfdResource for Pltt {
     }
 
     fn to_writer(&self, _writer: &mut dyn std::io::Write) -> Result<(), String> {
+        println!("Pltt::to_writer --> Unimplemented!");
         Ok(())
     }
 

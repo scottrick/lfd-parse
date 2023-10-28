@@ -21,7 +21,7 @@ struct Args {
 enum Commands {
     Display {
         #[arg(short, long)]
-        file: Option<String>,
+        file: String,
     },
     Dump {},
     VgaPac {
@@ -46,27 +46,18 @@ fn main() {
     let mut cmd = Args::command();
 
     match &args.command {
-        Commands::Display { file } => match file {
-            Some(file) => {
-                let lfd_file_result = LfdFile::read_from_file(file);
+        Commands::Display { file } => {
+            let lfd_file_result = LfdFile::read_from_file(file);
 
-                match lfd_file_result {
-                    Ok(lfd_file) => {
-                        lfd_file.lfd_print(0);
-                    }
-                    Err(e) => {
-                        cmd.error(ErrorKind::ArgumentConflict, e).exit();
-                    }
+            match lfd_file_result {
+                Ok(lfd_file) => {
+                    lfd_file.lfd_print(0);
+                }
+                Err(e) => {
+                    cmd.error(ErrorKind::ArgumentConflict, e).exit();
                 }
             }
-            None => {
-                cmd.error(
-                    ErrorKind::ArgumentConflict,
-                    "Requires that a file be set or debug be enabled.",
-                )
-                .exit();
-            }
-        },
+        }
         Commands::VgaPac { file, mode, output } => {
             if let Err(e) = parse_vga_pac_file(file, mode, output) {
                 cmd.error(ErrorKind::InvalidValue, e).exit();
@@ -78,7 +69,15 @@ fn main() {
 
             match lfd_file_result {
                 Ok(lfd_file) => {
-                    lfd_file.lfd_print(0);
+                    let new_file = LfdFile {
+                        file_name: lfd_file.file_name + "_extract",
+                        archive: lfd_file.archive,
+                    };
+
+                    match new_file.write_to_file() {
+                        Ok(_) => println!("Success!"),
+                        Err(e) => println!("Error: {e}"),
+                    }
                 }
                 Err(e) => {
                     cmd.error(ErrorKind::ArgumentConflict, e).exit();
@@ -103,25 +102,9 @@ fn dump() -> Result<(), String> {
     for entry in fs::read_dir("data/").map_err(|e| format!("Error reading directory: {e}"))? {
         let entry = entry.map_err(|e| format!("Invalid entry: {e}"))?;
 
-        let _is_species = entry.path().starts_with("data/SPECIES.LFD");
+        let is_lfd = entry.path().extension().is_some_and(|ext| ext.eq("LFD"));
 
-        let _is_tourdesk = entry.path().starts_with("data/TOURDESK.LFD");
-        let is_empire_lfd = entry.path().starts_with("data/EMPIRE.LFD");
-        let is_scene4 = entry.path().starts_with("data/SCENE4.LFD");
-        let is_platform = entry.path().starts_with("data/PLATFORM.LFD");
-
-        let _should_parse = is_empire_lfd || is_scene4 || is_platform;
-
-        let _is_city = entry.path().starts_with("data/CITY.LFD");
-        let _is_battle = entry.path().starts_with("data/BATTLE2.LFD");
-        let _is_test = entry.path().starts_with("data/LAUNCH.LFD");
-
-        // || {
-        // entry.path().starts_with("data/SPECIES2.LFD")
-        // || entry.path().starts_with("data/SPECIES3.LFD")
-        // };
-
-        match entry.path().is_file() {
+        match entry.path().is_file() && is_lfd {
             true => {
                 let lfd_file = LfdFile::read_from_file(
                     entry.path().to_str().expect("Failed to get file name."),

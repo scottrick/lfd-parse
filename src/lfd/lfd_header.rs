@@ -44,13 +44,16 @@ impl LfdHeader {
     }
 
     pub fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+        println!("{self:?}");
         writer
             .write_u32::<BigEndian>(self.header_type.to_u32())
             .map_err(|e| format!("Error writing lfd type: {e}"))?;
 
-        let name_clone = self.header_name.clone().into_bytes();
+        let mut name: Vec<u8> = vec![0; 8];
+        name[..self.header_name.len()].copy_from_slice(self.header_name.as_bytes());
+
         writer
-            .write_all(&name_clone)
+            .write_all(&name)
             .map_err(|e| format!("Error writing header name: {e}"))?;
 
         writer

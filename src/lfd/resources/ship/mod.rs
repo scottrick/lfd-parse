@@ -12,7 +12,6 @@ use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
 
 use crate::lfd::resources::LfdHeader;
-use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_resource::LfdResource;
 
 use core::fmt::Debug;
@@ -27,7 +26,7 @@ use std::io::SeekFrom;
 
 use self::mesh_settings::MeshSettings;
 use self::shading_set::ShadingSet;
-use self::ship_component::ShipComponent;
+use self::--report-identical-files ship_component::ShipComponent;
 
 pub struct Ship {
     pub header: LfdHeader,
@@ -118,6 +117,7 @@ impl LfdResource for Ship {
     }
 
     fn to_writer(&self, _writer: &mut dyn std::io::Write) -> Result<(), String> {
+        println!("[SHIP] Unimplemented!");
         Ok(())
     }
 
@@ -140,6 +140,7 @@ impl LfdResource for Ship {
         let spaces = " ".repeat(indent);
         println!("{spaces}{}", self.lfd_get_print_str());
 
+        /*
         println!("  {spaces}ShadingSets[{}]", self.shading_sets.len());
         for shading_set in self.shading_sets.iter() {
             println!("    {spaces}{shading_set:?}");
@@ -152,6 +153,7 @@ impl LfdResource for Ship {
             setting.lfd_print(indent + 2);
             component.lfd_print(indent + 2);
         }
+        */
     }
 }
 

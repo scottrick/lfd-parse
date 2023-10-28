@@ -43,12 +43,15 @@ impl LfdResource for Rmap {
     }
 
     fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+        println!("---------------------------------------------------------- RMAP");
         self.header.to_writer(writer)?;
 
+        println!("---------------------------------------------------------- RMAP::SubHeaders");
         for sub_header in self.sub_headers.iter() {
             sub_header.to_writer(writer)?;
         }
 
+        println!("---------------------------------------------------------- RMAP::Resources");
         for resource in self.resources.iter() {
             resource.to_writer(writer)?;
         }
@@ -78,7 +81,7 @@ impl LfdResource for Rmap {
                     resource.lfd_print(indent + INDENT_SIZE);
                 }
                 _ => {
-                    // resource.lfd_print(indent + INDENT_SIZE);
+                    resource.lfd_print(indent + INDENT_SIZE);
                 }
             }
         }

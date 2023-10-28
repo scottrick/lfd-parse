@@ -3,6 +3,7 @@ use crate::lfd::traits::lfd_resource::LfdResource;
 
 use byteorder::LittleEndian;
 use byteorder::ReadBytesExt;
+use byteorder::WriteBytesExt;
 use core::fmt::Debug;
 use core::fmt::Formatter;
 use std::fs::File;
@@ -15,6 +16,7 @@ pub struct Delt {
     pub top: u16,
     pub right: u16,
     pub bottom: u16,
+    pub remainder: Vec<u8>,
 }
 
 impl LfdResource for Delt {
@@ -41,10 +43,10 @@ impl LfdResource for Delt {
         let size_left: usize =
             usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
         let size_left = size_left - 8;
-        let mut data: Vec<u8> = vec![0; size_left];
+        let mut remainder: Vec<u8> = vec![0; size_left];
 
         reader
-            .read_exact(&mut data)
+            .read_exact(&mut remainder)
             .map_err(|e| format!("Error reading Unknown buffer: {e}"))?;
 
         Ok(Delt {
@@ -53,10 +55,31 @@ impl LfdResource for Delt {
             top,
             right,
             bottom,
+            remainder,
         })
     }
 
-    fn to_writer(&self, _writer: &mut dyn std::io::Write) -> Result<(), String> {
+    fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+        println!("[DELT]");
+        self.header.to_writer(writer)?;
+
+        writer
+            .write_u16::<LittleEndian>(self.left)
+            .map_err(|e| format!("Error writing left: {e}"))?;
+        writer
+            .write_u16::<LittleEndian>(self.top)
+            .map_err(|e| format!("Error writing top: {e}"))?;
+        writer
+            .write_u16::<LittleEndian>(self.right)
+            .map_err(|e| format!("Error writing right: {e}"))?;
+        writer
+            .write_u16::<LittleEndian>(self.bottom)
+            .map_err(|e| format!("Error writing bottom: {e}"))?;
+
+        writer
+            .write_all(&self.remainder)
+            .map_err(|e| format!("Error writing remainder: {e}"))?;
+
         Ok(())
     }
 
