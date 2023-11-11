@@ -26,7 +26,7 @@ use std::io::SeekFrom;
 
 use self::mesh_settings::MeshSettings;
 use self::shading_set::ShadingSet;
-use self::--report-identical-files ship_component::ShipComponent;
+use self::ship_component::ShipComponent;
 
 pub struct Ship {
     pub header: LfdHeader,

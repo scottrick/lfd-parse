@@ -5,6 +5,7 @@ use crate::lfd::traits::lfd_resource::LfdResource;
 
 use std::fmt::Debug;
 use std::fmt::Formatter;
+use std::fs;
 use std::fs::File;
 use std::io::BufReader;
 
@@ -74,10 +75,10 @@ impl LfdResource for Rmap {
         for resource in &self.resources {
             // add/remove resource types to enable/disable debug lfd print
             match resource.get_lfd_header().header_type {
-                crate::lfd::lfd_type::LfdHeaderType::Ship(_) => {
+                crate::lfd::lfd_type::LfdHeaderType::Ship => {
                     resource.lfd_print(indent + INDENT_SIZE);
                 }
-                crate::lfd::lfd_type::LfdHeaderType::Rmap(_) => {
+                crate::lfd::lfd_type::LfdHeaderType::Rmap => {
                     resource.lfd_print(indent + INDENT_SIZE);
                 }
                 _ => {
@@ -85,6 +86,16 @@ impl LfdResource for Rmap {
                 }
             }
         }
+    }
+
+    fn expand_to_destination(&self, destination: &str) -> Result<(), String> {
+        let _create_dir_result = fs::create_dir(destination);
+
+        for resource in self.resources.iter() {
+            resource.expand_to_destination(destination)?;
+        }
+
+        Ok(())
     }
 }
 

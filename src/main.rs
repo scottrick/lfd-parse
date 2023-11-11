@@ -68,17 +68,10 @@ fn main() {
             let lfd_file_result = LfdFile::read_from_file(file);
 
             match lfd_file_result {
-                Ok(lfd_file) => {
-                    let new_file = LfdFile {
-                        file_name: lfd_file.file_name + "_extract",
-                        archive: lfd_file.archive,
-                    };
-
-                    match new_file.write_to_file() {
-                        Ok(_) => println!("Success!"),
-                        Err(e) => println!("Error: {e}"),
-                    }
-                }
+                Ok(lfd_file) => match lfd_file.archive.expand_to_destination(destination) {
+                    Ok(_) => println!("Success!"),
+                    Err(error) => println!("Error: {error}"),
+                },
                 Err(e) => {
                     cmd.error(ErrorKind::ArgumentConflict, e).exit();
                 }

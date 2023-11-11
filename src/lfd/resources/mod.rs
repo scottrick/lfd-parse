@@ -22,19 +22,19 @@ pub fn create_from_reader(reader: &mut BufReader<File>) -> Result<Box<dyn LfdRes
     let header = LfdHeader::from_reader(reader)?;
 
     match header.header_type {
-        LfdHeaderType::Delt(_) => {
+        LfdHeaderType::Delt => {
             let delt = Delt::from_reader(reader, header)?;
             Ok(Box::from(delt))
         }
-        LfdHeaderType::Pltt(_) => {
+        LfdHeaderType::Pltt => {
             let pltt = Pltt::from_reader(reader, header)?;
             Ok(Box::from(pltt))
         }
-        LfdHeaderType::Rmap(_) => {
+        LfdHeaderType::Rmap => {
             let rmap = Rmap::from_reader(reader, header)?;
             Ok(Box::from(rmap))
         }
-        LfdHeaderType::Ship(_) => {
+        LfdHeaderType::Ship => {
             // if header.header_name == "TIEINT" {
             let ship = Ship::from_reader(reader, header)?;
             // ship.write_to_obj_file()?;

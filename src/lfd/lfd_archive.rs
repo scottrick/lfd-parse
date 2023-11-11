@@ -5,10 +5,11 @@ use std::io::BufReader;
 use std::io::Write;
 use std::string::String;
 
-use crate::lfd::resources;
 use crate::lfd::traits::lfd_print::LfdPrint;
 use crate::lfd::traits::lfd_print::INDENT_SIZE;
 use crate::lfd::traits::lfd_resource::LfdResource;
+
+use super::resources;
 
 pub struct LfdArchive {
     pub resource: Box<dyn LfdResource>,
@@ -25,6 +26,10 @@ impl LfdArchive {
 
     pub fn to_writer(&self, writer: &mut dyn Write) -> Result<(), String> {
         self.resource.to_writer(writer)
+    }
+
+    pub fn expand_to_destination(&self, destination: &str) -> Result<(), String> {
+        self.resource.expand_to_destination(destination)
     }
 }
 
