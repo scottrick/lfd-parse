@@ -60,7 +60,6 @@ impl LfdResource for Delt {
     }
 
     fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
-        println!("[DELT]");
         self.header.to_writer(writer)?;
 
         writer

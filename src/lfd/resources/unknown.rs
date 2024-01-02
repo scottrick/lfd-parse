@@ -28,7 +28,6 @@ impl LfdResource for Unknown {
     }
 
     fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
-        println!("[UNKNOWN]");
         self.header.to_writer(writer)?;
 
         writer

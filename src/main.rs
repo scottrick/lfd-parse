@@ -1,5 +1,6 @@
 use clap::error::ErrorKind;
 use lfd::lfd::lfd_file::LfdFile;
+use lfd::lfd::resources::rmap::Rmap;
 use lfd::lfd::traits::lfd_print::LfdPrint;
 use lfd::vga::parse_vga_pac_file;
 use lfd::vga::VgaPacParseMode;
@@ -38,7 +39,14 @@ enum Commands {
         #[arg(short, long)]
         destination: String,
     },
-    Combine {},
+    CompressDir {
+        #[arg(long)]
+        dir: String,
+        #[arg(long)]
+        dest: String,
+        #[arg(short, long)]
+        name: String,
+    },
 }
 
 fn main() {
@@ -77,8 +85,11 @@ fn main() {
                 }
             }
         }
-
-        Commands::Combine {} => todo!(),
+        Commands::CompressDir { dir, dest, name } => {
+            println!("compressing {dir} to {dest}/{name}.LFD");
+            let result = Rmap::from_directory(dir, dest, name);
+            println!("result: {:?}", result);
+        }
         Commands::Dump {} => {
             if let Err(e) = dump() {
                 cmd.error(ErrorKind::ArgumentConflict, e).exit();

@@ -1,3 +1,4 @@
+use crate::lfd::lfd_file::LfdFile;
 use crate::lfd::lfd_header::LfdHeader;
 use crate::lfd::resources;
 use crate::lfd::traits::lfd_print::INDENT_SIZE;
@@ -13,6 +14,30 @@ pub struct Rmap {
     pub header: LfdHeader,
     pub sub_headers: Vec<LfdHeader>,
     pub resources: Vec<Box<dyn LfdResource>>,
+}
+
+impl Rmap {
+    pub fn from_directory(dir: &str, dest: &str, name: &str) -> Result<Self, String> {
+        println!("from_directory {dir} to {dest}/{name}.LFD");
+
+        let mut resources: Vec<Box<dyn LfdResource>> = Vec::new();
+
+        for entry in fs::read_dir(dir).map_err(|e| format!("Error reading directory: {e}"))? {
+            let entry = entry.map_err(|e| format!("Invalid entry: {e}"))?;
+            println!("read entry: {:?}", entry);
+            let lfd_file =
+                LfdFile::read_from_file(entry.path().to_str().expect("Failed to get file name."))
+                    .map_err(|e| format!("Failed to get file name: {}", e))?;
+            resources.push(lfd_file.archive.resource);
+        }
+
+        for resource in resources.iter() {
+            println!("resource: {}", resource.lfd_get_print_str());
+        }
+
+        println!("got some resources length: {}", resources.len());
+        Err("not done".to_string())
+    }
 }
 
 impl LfdResource for Rmap {
@@ -44,15 +69,12 @@ impl LfdResource for Rmap {
     }
 
     fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
-        println!("---------------------------------------------------------- RMAP");
         self.header.to_writer(writer)?;
 
-        println!("---------------------------------------------------------- RMAP::SubHeaders");
         for sub_header in self.sub_headers.iter() {
             sub_header.to_writer(writer)?;
         }
 
-        println!("---------------------------------------------------------- RMAP::Resources");
         for resource in self.resources.iter() {
             resource.to_writer(writer)?;
         }

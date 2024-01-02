@@ -44,7 +44,6 @@ impl LfdHeader {
     }
 
     pub fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
-        println!("{self:?}");
         writer
             .write_u32::<BigEndian>(self.header_type.to_u32())
             .map_err(|e| format!("Error writing lfd type: {e}"))?;

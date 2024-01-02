@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::{fmt::Formatter, fs::File, io::BufReader};
 
-use byteorder::ReadBytesExt;
+use byteorder::{ReadBytesExt, WriteBytesExt};
 
 use crate::lfd::traits::lfd_print::LfdPrint;
 
@@ -32,6 +32,31 @@ impl Color {
             * mult;
 
         Ok(Color { r, g, b })
+    }
+
+    pub fn to_writer(
+        &self,
+        writer: &mut dyn std::io::Write,
+        is_six_bit: bool,
+    ) -> Result<(), String> {
+        let mult = match is_six_bit {
+            true => 4u8,
+            false => 1u8,
+        };
+
+        writer
+            .write_u8(self.r / mult)
+            .map_err(|e| format!("Error writing r: {e}"))?;
+
+        writer
+            .write_u8(self.g / mult)
+            .map_err(|e| format!("Error writing g: {e}"))?;
+
+        writer
+            .write_u8(self.b / mult)
+            .map_err(|e| format!("Error writing b: {e}"))?;
+
+        Ok(())
     }
 
     pub fn get_6bit_color_str(&self) -> String {

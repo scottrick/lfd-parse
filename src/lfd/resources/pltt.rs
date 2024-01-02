@@ -1,4 +1,5 @@
 use byteorder::ReadBytesExt;
+use byteorder::WriteBytesExt;
 
 use crate::lfd::resources::LfdHeader;
 use crate::lfd::traits::lfd_resource::LfdResource;
@@ -57,8 +58,25 @@ impl LfdResource for Pltt {
         })
     }
 
-    fn to_writer(&self, _writer: &mut dyn std::io::Write) -> Result<(), String> {
-        println!("Pltt::to_writer --> Unimplemented!");
+    fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+        self.header.to_writer(writer)?;
+
+        writer
+            .write_u8(self.start_index)
+            .map_err(|e| format!("Error writing start_index: {e}"))?;
+
+        writer
+            .write_u8(self.end_index)
+            .map_err(|e| format!("Error writing end_index: {e}"))?;
+
+        self.colors
+            .to_writer(writer, false)
+            .map_err(|e| format!("Error writing colors: {e}"))?;
+
+        writer
+            .write(&self.reserved)
+            .map_err(|e| format!("Error writing reserved: {e}"))?;
+
         Ok(())
     }
 

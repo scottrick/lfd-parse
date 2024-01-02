@@ -117,8 +117,7 @@ impl LfdResource for Ship {
     }
 
     fn to_writer(&self, _writer: &mut dyn std::io::Write) -> Result<(), String> {
-        println!("[SHIP] Unimplemented!");
-        Ok(())
+        todo!();
     }
 
     fn get_lfd_header(&self) -> &LfdHeader {

@@ -26,6 +26,20 @@ impl ColorArray {
 
         Ok(ColorArray { colors })
     }
+
+    pub fn to_writer(
+        &self,
+        writer: &mut dyn std::io::Write,
+        is_six_bit: bool,
+    ) -> Result<(), String> {
+        for color in self.colors.iter() {
+            color
+                .to_writer(writer, is_six_bit)
+                .map_err(|e| format!("Error writing color: {e}"))?;
+        }
+
+        Ok(())
+    }
 }
 
 impl Debug for ColorArray {
