@@ -38,6 +38,7 @@ pub struct Ship {
     pub shading_sets: Vec<ShadingSet>,
     pub mesh_settings: Vec<MeshSettings>,
     pub ship_components: Vec<ShipComponent>,
+    pub raw_data: Vec<u8>,
 }
 
 impl LfdResource for Ship {
@@ -45,6 +46,10 @@ impl LfdResource for Ship {
     where
         Self: Sized,
     {
+        let ship_start_cursor_pos = reader
+            .stream_position()
+            .map_err(|e| format!("Error reading stream position: {e}"))?;
+
         let length: u16 = reader
             .read_u16::<LittleEndian>()
             .map_err(|e| format!("Error reading length: {e}"))?;
@@ -103,6 +108,19 @@ impl LfdResource for Ship {
             .seek(SeekFrom::Start(end_pos))
             .map_err(|e| format!("Error seeking end of ship: {e}"))?;
 
+        // Workaround until we are able to properly write out the SHIP data.
+        // Read entire blob into u8 vec, so we can write it back out for now.
+        reader
+            .seek(SeekFrom::Start(ship_start_cursor_pos))
+            .map_err(|e| format!("Error seeking start of ship: {e}"))?;
+
+        let size: usize = usize::try_from(header.size).map_err(|e| format!("Invalid size: {e}"))?;
+        let mut raw_data: Vec<u8> = vec![0; size];
+
+        reader
+            .read_exact(&mut raw_data)
+            .map_err(|e| format!("Error reading Unknown buffer: {e}"))?;
+
         Ok(Ship {
             header,
             length,
@@ -113,11 +131,18 @@ impl LfdResource for Ship {
             shading_sets,
             mesh_settings,
             ship_components,
+            raw_data,
         })
     }
 
-    fn to_writer(&self, _writer: &mut dyn std::io::Write) -> Result<(), String> {
-        todo!();
+    fn to_writer(&self, writer: &mut dyn std::io::Write) -> Result<(), String> {
+        self.header.to_writer(writer)?;
+
+        writer
+            .write(&self.raw_data)
+            .map_err(|e| format!("Error writing ship data: {e}"))?;
+
+        Ok(())
     }
 
     fn get_lfd_header(&self) -> &LfdHeader {

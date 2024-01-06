@@ -1,4 +1,5 @@
 pub mod delt;
+pub mod panl;
 pub mod pltt;
 pub mod rmap;
 pub mod ship;
