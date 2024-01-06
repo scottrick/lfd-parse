@@ -14,6 +14,7 @@ use crate::lfd::resources::unknown::Unknown;
 use crate::lfd::traits::lfd_resource::LfdResource;
 
 use self::delt::Delt;
+use self::panl::Panl;
 use self::pltt::Pltt;
 use self::ship::Ship;
 
@@ -34,6 +35,10 @@ pub fn create_from_reader(reader: &mut BufReader<File>) -> Result<Box<dyn LfdRes
         LfdHeaderType::Rmap => {
             let rmap = Rmap::from_reader(reader, header)?;
             Ok(Box::from(rmap))
+        }
+        LfdHeaderType::Panl => {
+            let panl = Panl::from_reader(reader, header)?;
+            Ok(Box::from(panl))
         }
         LfdHeaderType::Ship => {
             // if header.header_name == "TIEINT" {

@@ -38,8 +38,6 @@ pub fn compare_all_lfd() -> Result<(), String> {
 }
 
 fn read_write_comparison(lfd_file: &mut LfdFile) {
-    println!("read_write_comparison: {}", lfd_file.file_name);
-
     // Open original LFD file.
     let original = std::fs::read(&lfd_file.file_name).expect("Failed to open original LFD file.");
 
@@ -60,11 +58,20 @@ fn read_write_comparison(lfd_file: &mut LfdFile) {
     let duplicate = std::fs::read(&lfd_file.file_name).expect("Failed to open duplicate LFD file.");
 
     // Binary comparison between original and in_memory_extract version.
-    assert_eq!(original.len(), duplicate.len());
+    assert_eq!(
+        original.len(),
+        duplicate.len(),
+        "Comparing length of {}.",
+        lfd_file.file_name
+    );
 
     // Compare every byte next.
     for i in 0..original.len() {
-        assert_eq!(original[i], duplicate[i]);
+        assert_eq!(
+            original[i], duplicate[i],
+            "Comparing byte {i} of {}.",
+            lfd_file.file_name
+        );
     }
 
     fs::remove_file(&lfd_file.file_name).expect("Failed to clean up duplicate file.");
